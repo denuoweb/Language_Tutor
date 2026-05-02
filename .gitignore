@@ -1,9 +1,13 @@
 # Miscellaneous
 *.class
 *.log
+*.p12
+*.pem
 *.pyc
 *.swp
 .DS_Store
+.env
+.env.*
 .atom/
 .build/
 .buildlog/
@@ -35,6 +39,10 @@ migrate_working_dir/
 
 # Symbolication related
 app.*.symbols
+
+# Firebase/Admin secrets
+firebase-adminsdk*.json
+service-account*.json
 
 # Obfuscation related
 app.*.map.json
