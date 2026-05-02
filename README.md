@@ -12,6 +12,8 @@
 
 **Primary AI service:** Firebase AI Logic / Gemini API
 
+**Gemini path:** We use Gemini 2.5 Flash through Firebase AI Logic, Google's official mobile SDK path for calling Gemini from Flutter.
+
 **MVP camera source:** Phone camera
 
 **Stretch camera source:** Ray-Ban Meta Gen 2 through native iOS/Android bridge
@@ -22,6 +24,13 @@
 
 
 The app shall periodically capture images from the phone camera, send selected still frames to Gemini, generate one level-appropriate Japanese learning item, speak it aloud, and save it as an SRS card.
+
+Gemini is central to the MVP:
+
+* Use Gemini image understanding for camera frames.
+* Use Gemini structured output for lesson JSON.
+* Use Gemini to generate level-appropriate Japanese.
+* Use Gemini to generate SRS card metadata.
 
 The Ray-Ban Meta Gen 2 integration shall remain optional. The app must remain fully functional with only the phone camera. Meta’s Wearables Device Access Toolkit is available as a developer-preview SDK for mobile apps, and Meta describes it as enabling access to AI-glasses camera/audio capabilities, but it should not be treated as an MVP dependency. ([Meta for Developers][1])
 
@@ -746,7 +755,14 @@ Deliverables:
 * Ray-Ban Bluetooth audio demo
 * Ray-Ban camera-source stub
 * Native bridge attempt only if core app is already stable
-* Final demo script
+* Final demo script built around: "We use Gemini 2.5 Flash through Firebase AI Logic, Google's official mobile SDK path for calling Gemini from Flutter."
+
+Presentation emphasis:
+
+* Use Gemini image understanding for camera frames.
+* Use Gemini structured output for lesson JSON.
+* Use Gemini to generate level-appropriate Japanese.
+* Use Gemini to generate SRS card metadata.
 
 ---
 
@@ -769,8 +785,10 @@ The strongest realistic demo is:
 
 ```text
 Phone camera
-→ Gemini 2.5 Flash
-→ Japanese ambient lesson
+→ Gemini 2.5 Flash via Firebase AI Logic
+→ Structured lesson JSON
+→ Level-appropriate Japanese lesson
+→ SRS card metadata
 → TTS through phone or Ray-Ban Bluetooth audio
 → Drift-backed SRS review
 
