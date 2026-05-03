@@ -16,8 +16,6 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>language_tutor</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Camera frames are used to generate Japanese learning cards.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -68,5 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Ambient Tutor needs camera access to capture images and generate language-learning lessons.</string>
 </dict>
 </plist>
