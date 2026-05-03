@@ -16,7 +16,7 @@ val localProperties =
     }
 
 val configuredNdkDir =
-    localProperties.getProperty("ndk.dir")
+    localProperties.getProperty("apkw.ndk.path")
         ?: System.getenv("ANDROID_NDK_HOME")
         ?: System.getenv("ANDROID_NDK_ROOT")
 
@@ -36,6 +36,7 @@ android {
     namespace = "com.denuoweb.language_tutor"
     compileSdk = flutter.compileSdkVersion
     if (!configuredNdkVersion.isNullOrBlank()) {
+        ndkPath = configuredNdkDir
         ndkVersion = configuredNdkVersion
     } else if (configuredNdkDir.isNullOrBlank()) {
         ndkVersion = flutter.ndkVersion

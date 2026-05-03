@@ -123,6 +123,19 @@ flutter run --dart-define=FIREBASE_AI_ENABLED=true
 
 The app defaults to demo mode unless `FIREBASE_AI_ENABLED=true` is provided.
 
+## Android Toolchain Overrides
+
+If the default Android SDK contains a broken or incomplete NDK, keep `sdk.dir`
+pointing at the working SDK and add a custom NDK override in `android/local.properties`:
+
+```properties
+sdk.dir=/home/den/Android/Sdk
+apkw.ndk.path=/home/den/.local/share/apkw/toolchains/android-ndk-custom/r29
+```
+
+The Gradle build reads `apkw.ndk.path` and maps it to `android.ndkPath`.
+This is intended for local machine setup and should not be committed.
+
 ## Secrets And Firebase
 
 For this mobile app, there should be no local `.env` file and no Gemini API key in the repo.
@@ -182,6 +195,16 @@ flutter analyze
 flutter test
 flutter run
 flutter run --dart-define=FIREBASE_AI_ENABLED=true
+```
+
+If Gradle reports corrupted Kotlin DSL metadata such as `metadata.bin`, clear that
+cache and rebuild:
+
+```sh
+cd android
+./gradlew --stop
+rm -rf ~/.gradle/caches/8.14/kotlin-dsl/scripts ~/.gradle/caches/8.14/kotlin-dsl/accessors
+./gradlew app:assembleDebug
 ```
 
 ## Files To Keep Out Of Git
