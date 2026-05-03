@@ -22,6 +22,8 @@ val githubToken = System.getenv("GITHUB_TOKEN") ?: localProperties.getProperty("
 val metaDatEnabled = localProperties.getProperty("meta.dat.enabled")?.toBoolean() ?: false
 val metaDatVersion = localProperties.getProperty("meta.dat.version") ?: "0.6.0"
 val metaDatApplicationId = localProperties.getProperty("meta.dat.application.id") ?: ""
+val metaDatClientToken = localProperties.getProperty("meta.dat.client.token") ?: ""
+val metaDatCallbackScheme = localProperties.getProperty("meta.dat.callback.scheme") ?: "language-tutor"
 val metaDatAnalyticsOptOut =
     localProperties.getProperty("meta.dat.analytics.opt_out")?.toBoolean() ?: true
 
@@ -90,6 +92,13 @@ android {
         buildConfig = true
     }
 
+    sourceSets {
+        getByName("main").java.srcDirs("src/main/kotlin")
+        if (metaDatEnabled) {
+            getByName("main").java.srcDirs("src/metaDat/kotlin")
+        }
+    }
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
@@ -115,12 +124,24 @@ android {
         versionName = flutter.versionName
         manifestPlaceholders["metaDatApplicationId"] =
             if (metaDatApplicationId.isBlank()) "disabled" else metaDatApplicationId
+        manifestPlaceholders["metaDatClientToken"] = metaDatClientToken
+        manifestPlaceholders["metaDatCallbackScheme"] = metaDatCallbackScheme
         manifestPlaceholders["metaDatAnalyticsOptOut"] = metaDatAnalyticsOptOut.toString()
         buildConfigField("boolean", "META_DAT_ENABLED", metaDatEnabled.toString())
         buildConfigField(
             "String",
             "META_DAT_APPLICATION_ID",
             "\"${metaDatApplicationId}\"",
+        )
+        buildConfigField(
+            "String",
+            "META_DAT_CLIENT_TOKEN",
+            "\"${metaDatClientToken}\"",
+        )
+        buildConfigField(
+            "String",
+            "META_DAT_CALLBACK_SCHEME",
+            "\"${metaDatCallbackScheme}\"",
         )
         buildConfigField(
             "boolean",

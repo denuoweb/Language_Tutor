@@ -1,5 +1,5 @@
-# Firebase AI requires iOS 15 or newer.
-platform :ios, '15.0'
+# Meta DAT sample app requires iOS 17 or newer.
+platform :ios, '17.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -45,6 +45,7 @@ post_install do |installer|
         '$(inherited)',
         'PERMISSION_CAMERA=1',
       ]
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
     end
   end
 end

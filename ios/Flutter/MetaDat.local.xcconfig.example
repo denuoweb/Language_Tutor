@@ -1,0 +1,6 @@
+// Copy this file to MetaDat.local.xcconfig and replace the values with the
+// real credentials from the Meta Wearables Developer Center. The local file is
+// gitignored and should not be committed.
+
+META_DAT_APP_ID = REPLACE_WITH_REAL_META_APP_ID
+META_DAT_CLIENT_TOKEN = REPLACE_WITH_REAL_META_CLIENT_TOKEN
