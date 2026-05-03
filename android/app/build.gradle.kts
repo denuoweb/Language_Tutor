@@ -69,6 +69,16 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    signingConfigs {
+        create("repoDebug") {
+            // Keep debug installs compatible across machines by using a stable repo-local key.
+            storeFile = file("language-tutor-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.denuoweb.language_tutor"
@@ -81,10 +91,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("repoDebug")
+        }
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // TODO: Replace with a production signing config before shipping a release build.
+            signingConfig = signingConfigs.getByName("repoDebug")
         }
     }
 }
