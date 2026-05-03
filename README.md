@@ -403,11 +403,11 @@ Acceptance criteria:
 
 ## FR-12: Ray-Ban Extension
 
-The app shall include architecture support for a future Ray-Ban source, but this shall not block MVP completion.
+The app shall include an optional Ray-Ban source, but this shall not block MVP completion.
 
 Acceptance criteria:
 
-* `RayBanFrameSource` exists as an interface or stub.
+* `RayBanFrameSource` exists as a supported source implementation.
 * Flutter uses platform channels for native iOS/Android bridge work.
 * Phone camera remains default.
 * If Ray-Ban camera access is unavailable, the app still demos successfully.
@@ -753,7 +753,7 @@ Deliverables:
 Deliverables:
 
 * Ray-Ban Bluetooth audio demo
-* Ray-Ban camera-source stub
+* Ray-Ban camera-source integration
 * Native bridge attempt only if core app is already stable
 * Final demo script built around: "We use Gemini 2.5 Flash through Firebase AI Logic, Google's official mobile SDK path for calling Gemini from Flutter."
 

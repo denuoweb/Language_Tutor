@@ -88,7 +88,7 @@ flutterfire configure \
   --out lib/firebase_options.dart
 ```
 
-This replaces the committed stub at `lib/firebase_options.dart` with Firebase config for your project.
+This writes Firebase config to `lib/firebase_options.dart` for your project.
 
 If the Firebase apps already exist and you need to inspect their app IDs:
 
