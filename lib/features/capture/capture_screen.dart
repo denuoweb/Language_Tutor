@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,9 @@ import '../../shared/jlpt_level.dart';
 import '../lessons/lesson_card.dart';
 import '../settings/settings_controller.dart';
 import 'capture_controller.dart';
+import 'frame_source.dart';
 import 'phone_camera_frame_source.dart';
+import 'ray_ban_frame_source.dart';
 
 class CaptureScreen extends ConsumerWidget {
   const CaptureScreen({super.key});
@@ -18,6 +21,7 @@ class CaptureScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final capture = ref.watch(captureControllerProvider);
     final settings = ref.watch(settingsControllerProvider);
+    final selectedSource = ref.watch(selectedCaptureSourceProvider);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -30,6 +34,33 @@ class CaptureScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SegmentedButton<CaptureSource>(
+                  segments: const [
+                    ButtonSegment<CaptureSource>(
+                      value: CaptureSource.phoneCamera,
+                      icon: Icon(Icons.phone_android),
+                      label: Text('Phone camera'),
+                    ),
+                    ButtonSegment<CaptureSource>(
+                      value: CaptureSource.rayBan,
+                      icon: Icon(Icons.visibility),
+                      label: Text('Ray-Ban'),
+                    ),
+                  ],
+                  selected: {selectedSource},
+                  onSelectionChanged:
+                      capture.isRunning || capture.isGenerating
+                      ? null
+                      : (selection) {
+                          if (selection.isEmpty) {
+                            return;
+                          }
+                          ref
+                              .read(selectedCaptureSourceProvider.notifier)
+                              .setSource(selection.first);
+                        },
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
@@ -80,7 +111,11 @@ class CaptureScreen extends ConsumerWidget {
                       icon: Icon(
                         capture.isRunning ? Icons.stop : Icons.play_arrow,
                       ),
-                      label: Text(capture.isRunning ? 'Stop' : 'Start'),
+                      label: Text(
+                        capture.isRunning
+                            ? 'Stop ${selectedSource.label}'
+                            : 'Start ${selectedSource.label}',
+                      ),
                     ),
                   ],
                 ),
@@ -123,15 +158,32 @@ class CaptureScreen extends ConsumerWidget {
   }
 }
 
-class _CameraPreviewPanel extends ConsumerStatefulWidget {
+class _CameraPreviewPanel extends ConsumerWidget {
   const _CameraPreviewPanel();
 
   @override
-  ConsumerState<_CameraPreviewPanel> createState() =>
-      _CameraPreviewPanelState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    return switch (ref.watch(selectedCaptureSourceProvider)) {
+      CaptureSource.phoneCamera => const _PhoneCameraPreviewPanel(
+        key: ValueKey(CaptureSource.phoneCamera),
+      ),
+      CaptureSource.rayBan => const _RayBanPreviewPanel(
+        key: ValueKey(CaptureSource.rayBan),
+      ),
+    };
+  }
 }
 
-class _CameraPreviewPanelState extends ConsumerState<_CameraPreviewPanel>
+class _PhoneCameraPreviewPanel extends ConsumerStatefulWidget {
+  const _PhoneCameraPreviewPanel({super.key});
+
+  @override
+  ConsumerState<_PhoneCameraPreviewPanel> createState() =>
+      _PhoneCameraPreviewPanelState();
+}
+
+class _PhoneCameraPreviewPanelState
+    extends ConsumerState<_PhoneCameraPreviewPanel>
     with WidgetsBindingObserver {
   PhoneCameraFrameSource? _phoneCameraFrameSource;
 
@@ -140,11 +192,9 @@ class _CameraPreviewPanelState extends ConsumerState<_CameraPreviewPanel>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    final frameSource = ref.read(frameSourceProvider);
-    if (frameSource is PhoneCameraFrameSource) {
-      _phoneCameraFrameSource = frameSource;
-      frameSource.attachPreview();
-    }
+    final frameSource = ref.read(phoneCameraFrameSourceProvider);
+    _phoneCameraFrameSource = frameSource;
+    frameSource.attachPreview();
   }
 
   @override
@@ -167,10 +217,7 @@ class _CameraPreviewPanelState extends ConsumerState<_CameraPreviewPanel>
 
   @override
   Widget build(BuildContext context) {
-    final frameSource = ref.watch(frameSourceProvider);
-    final phoneCamera = frameSource is PhoneCameraFrameSource
-        ? frameSource
-        : null;
+    final phoneCamera = ref.watch(phoneCameraFrameSourceProvider);
     final placeholderColor = Theme.of(
       context,
     ).colorScheme.surfaceContainerHighest;
@@ -182,42 +229,113 @@ class _CameraPreviewPanelState extends ConsumerState<_CameraPreviewPanel>
           height: height,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: phoneCamera == null
-                ? _CameraPlaceholder(color: placeholderColor)
-                : ListenableBuilder(
-                    listenable: phoneCamera,
-                    builder: (context, _) {
-                      final controller = phoneCamera.controller;
-                      if (controller != null &&
-                          controller.value.isInitialized) {
-                        return CameraPreview(controller);
-                      }
+            child: ListenableBuilder(
+              listenable: phoneCamera,
+              builder: (context, _) {
+                final controller = phoneCamera.controller;
+                if (controller != null && controller.value.isInitialized) {
+                  return CameraPreview(controller);
+                }
 
-                      return _CameraPlaceholder(
-                        color: placeholderColor,
-                        isPreparing: phoneCamera.isPreparingPreview,
-                        message: phoneCamera.previewMessage,
-                        retryLabel: phoneCamera.canRequestPermission
-                            ? 'Allow camera'
-                            : 'Retry',
-                        onRetry: phoneCamera.canRetryPreview
-                            ? () {
-                                unawaited(
-                                  phoneCamera.retryPreview(
-                                    requestPermission:
-                                        phoneCamera.canRequestPermission,
-                                  ),
-                                );
-                              }
-                            : null,
-                        onOpenSettings: phoneCamera.canOpenPermissionSettings
-                            ? () {
-                                unawaited(phoneCamera.openPermissionSettings());
-                              }
-                            : null,
-                      );
-                    },
-                  ),
+                return _CameraPlaceholder(
+                  color: placeholderColor,
+                  icon: Icons.camera_alt_outlined,
+                  isPreparing: phoneCamera.isPreparingPreview,
+                  message: phoneCamera.previewMessage,
+                  retryLabel: phoneCamera.canRequestPermission
+                      ? 'Allow camera'
+                      : 'Retry',
+                  onRetry: phoneCamera.canRetryPreview
+                      ? () {
+                          unawaited(
+                            phoneCamera.retryPreview(
+                              requestPermission:
+                                  phoneCamera.canRequestPermission,
+                            ),
+                          );
+                        }
+                      : null,
+                  onOpenSettings: phoneCamera.canOpenPermissionSettings
+                      ? () {
+                          unawaited(phoneCamera.openPermissionSettings());
+                        }
+                      : null,
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _RayBanPreviewPanel extends ConsumerStatefulWidget {
+  const _RayBanPreviewPanel({super.key});
+
+  @override
+  ConsumerState<_RayBanPreviewPanel> createState() => _RayBanPreviewPanelState();
+}
+
+class _RayBanPreviewPanelState extends ConsumerState<_RayBanPreviewPanel> {
+  RayBanFrameSource? _rayBanFrameSource;
+
+  @override
+  void initState() {
+    super.initState();
+    final frameSource = ref.read(rayBanFrameSourceProvider);
+    _rayBanFrameSource = frameSource;
+    frameSource.attachPreview();
+  }
+
+  @override
+  void dispose() {
+    final frameSource = _rayBanFrameSource;
+    if (frameSource != null) {
+      unawaited(frameSource.detachPreview());
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rayBan = ref.watch(rayBanFrameSourceProvider);
+    final placeholderColor = Theme.of(
+      context,
+    ).colorScheme.surfaceContainerHighest;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = (constraints.maxWidth * 0.72).clamp(220.0, 360.0);
+        return SizedBox(
+          height: height,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: ListenableBuilder(
+              listenable: rayBan,
+              builder: (context, _) {
+                final previewFrame = rayBan.previewFrame;
+                if (previewFrame != null) {
+                  return _ImagePreview(
+                    bytes: previewFrame.bytes,
+                    semanticLabel: 'Ray-Ban preview frame',
+                  );
+                }
+
+                return _CameraPlaceholder(
+                  color: placeholderColor,
+                  icon: Icons.visibility,
+                  isPreparing: rayBan.isPreparingPreview,
+                  message: rayBan.previewMessage,
+                  retryLabel: 'Refresh',
+                  onRetry: rayBan.canRetryPreview
+                      ? () {
+                          unawaited(rayBan.retryPreview());
+                        }
+                      : null,
+                );
+              },
+            ),
           ),
         );
       },
@@ -228,6 +346,7 @@ class _CameraPreviewPanelState extends ConsumerState<_CameraPreviewPanel>
 class _CameraPlaceholder extends StatelessWidget {
   const _CameraPlaceholder({
     required this.color,
+    required this.icon,
     this.isPreparing = false,
     this.message,
     this.retryLabel = 'Retry',
@@ -236,6 +355,7 @@ class _CameraPlaceholder extends StatelessWidget {
   });
 
   final Color color;
+  final IconData icon;
   final bool isPreparing;
   final String? message;
   final String retryLabel;
@@ -246,7 +366,7 @@ class _CameraPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     final children = <Widget>[
       Icon(
-        Icons.camera_alt_outlined,
+        icon,
         size: 44,
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
@@ -304,6 +424,26 @@ class _CameraPlaceholder extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(mainAxisSize: MainAxisSize.min, children: children),
         ),
+      ),
+    );
+  }
+}
+
+class _ImagePreview extends StatelessWidget {
+  const _ImagePreview({required this.bytes, required this.semanticLabel});
+
+  final Uint8List bytes;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Colors.black,
+      child: Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        semanticLabel: semanticLabel,
       ),
     );
   }

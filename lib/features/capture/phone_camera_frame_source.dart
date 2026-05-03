@@ -8,15 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'camera_frame.dart';
 import 'frame_source.dart';
 
-class CameraAccessException implements Exception {
-  const CameraAccessException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
-
 class PhoneCameraFrameSource extends ChangeNotifier implements FrameSource {
   PhoneCameraFrameSource({
     Future<PermissionStatus> Function()? permissionStatus,

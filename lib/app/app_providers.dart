@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database/app_database.dart';
 import '../features/capture/frame_source.dart';
 import '../features/capture/phone_camera_frame_source.dart';
+import '../features/capture/ray_ban_frame_source.dart';
 import '../features/gemini/demo_tutor_generation_service.dart';
 import '../features/gemini/firebase_bootstrap.dart';
 import '../features/gemini/firebase_tutor_generation_service.dart';
@@ -20,10 +21,37 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return database;
 });
 
-final frameSourceProvider = Provider<FrameSource>((ref) {
+class SelectedCaptureSourceNotifier extends Notifier<CaptureSource> {
+  @override
+  CaptureSource build() => CaptureSource.phoneCamera;
+
+  void setSource(CaptureSource source) {
+    state = source;
+  }
+}
+
+final selectedCaptureSourceProvider =
+    NotifierProvider<SelectedCaptureSourceNotifier, CaptureSource>(
+      SelectedCaptureSourceNotifier.new,
+    );
+
+final phoneCameraFrameSourceProvider = Provider<PhoneCameraFrameSource>((ref) {
   final source = PhoneCameraFrameSource();
   ref.onDispose(source.dispose);
   return source;
+});
+
+final rayBanFrameSourceProvider = Provider<RayBanFrameSource>((ref) {
+  final source = RayBanFrameSource();
+  ref.onDispose(source.dispose);
+  return source;
+});
+
+final frameSourceProvider = Provider<FrameSource>((ref) {
+  return switch (ref.watch(selectedCaptureSourceProvider)) {
+    CaptureSource.phoneCamera => ref.watch(phoneCameraFrameSourceProvider),
+    CaptureSource.rayBan => ref.watch(rayBanFrameSourceProvider),
+  };
 });
 
 final tutorGenerationServiceProvider = Provider<TutorGenerationService>((ref) {
