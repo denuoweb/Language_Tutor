@@ -18,10 +18,14 @@ val localProperties =
         }
     }
 
-val configuredNdkDir =
+val configuredNdkDirFromProperties = localProperties.getProperty("ndk.dir")
+
+val configuredNdkPathOverride =
     localProperties.getProperty("apkw.ndk.path")
         ?: System.getenv("ANDROID_NDK_HOME")
         ?: System.getenv("ANDROID_NDK_ROOT")
+
+val configuredNdkDir = configuredNdkPathOverride ?: configuredNdkDirFromProperties
 
 val configuredAapt2Path =
     localProperties.getProperty("apkw.aapt2.path")
@@ -48,7 +52,9 @@ android {
     namespace = "com.denuoweb.language_tutor"
     compileSdk = flutter.compileSdkVersion
     if (!configuredNdkVersion.isNullOrBlank()) {
-        ndkPath = configuredNdkDir
+        if (!configuredNdkPathOverride.isNullOrBlank()) {
+            ndkPath = configuredNdkPathOverride
+        }
         ndkVersion = configuredNdkVersion
     } else if (configuredNdkDir.isNullOrBlank()) {
         ndkVersion = flutter.ndkVersion
