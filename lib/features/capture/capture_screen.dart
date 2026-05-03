@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -121,14 +123,53 @@ class CaptureScreen extends ConsumerWidget {
   }
 }
 
-class _CameraPreviewPanel extends ConsumerWidget {
+class _CameraPreviewPanel extends ConsumerStatefulWidget {
   const _CameraPreviewPanel();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_CameraPreviewPanel> createState() =>
+      _CameraPreviewPanelState();
+}
+
+class _CameraPreviewPanelState extends ConsumerState<_CameraPreviewPanel>
+    with WidgetsBindingObserver {
+  PhoneCameraFrameSource? _phoneCameraFrameSource;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    final frameSource = ref.read(frameSourceProvider);
+    if (frameSource is PhoneCameraFrameSource) {
+      _phoneCameraFrameSource = frameSource;
+      frameSource.attachPreview();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    final frameSource = _phoneCameraFrameSource;
+    if (frameSource != null) {
+      unawaited(frameSource.detachPreview());
+    }
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final frameSource = _phoneCameraFrameSource;
+    if (frameSource != null) {
+      unawaited(frameSource.handleAppLifecycleState(state));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final frameSource = ref.watch(frameSourceProvider);
-    final controller = frameSource is PhoneCameraFrameSource
-        ? frameSource.controller
+    final phoneCamera = frameSource is PhoneCameraFrameSource
+        ? frameSource
         : null;
     final placeholderColor = Theme.of(
       context,
@@ -141,17 +182,129 @@ class _CameraPreviewPanel extends ConsumerWidget {
           height: height,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: controller != null && controller.value.isInitialized
-                ? CameraPreview(controller)
-                : DecoratedBox(
-                    decoration: BoxDecoration(color: placeholderColor),
-                    child: const Center(
-                      child: Icon(Icons.camera_alt_outlined, size: 44),
-                    ),
+            child: phoneCamera == null
+                ? _CameraPlaceholder(color: placeholderColor)
+                : ListenableBuilder(
+                    listenable: phoneCamera,
+                    builder: (context, _) {
+                      final controller = phoneCamera.controller;
+                      if (controller != null &&
+                          controller.value.isInitialized) {
+                        return CameraPreview(controller);
+                      }
+
+                      return _CameraPlaceholder(
+                        color: placeholderColor,
+                        isPreparing: phoneCamera.isPreparingPreview,
+                        message: phoneCamera.previewMessage,
+                        retryLabel: phoneCamera.canRequestPermission
+                            ? 'Allow camera'
+                            : 'Retry',
+                        onRetry: phoneCamera.canRetryPreview
+                            ? () {
+                                unawaited(
+                                  phoneCamera.retryPreview(
+                                    requestPermission:
+                                        phoneCamera.canRequestPermission,
+                                  ),
+                                );
+                              }
+                            : null,
+                        onOpenSettings: phoneCamera.canOpenPermissionSettings
+                            ? () {
+                                unawaited(phoneCamera.openPermissionSettings());
+                              }
+                            : null,
+                      );
+                    },
                   ),
           ),
         );
       },
+    );
+  }
+}
+
+class _CameraPlaceholder extends StatelessWidget {
+  const _CameraPlaceholder({
+    required this.color,
+    this.isPreparing = false,
+    this.message,
+    this.retryLabel = 'Retry',
+    this.onRetry,
+    this.onOpenSettings,
+  });
+
+  final Color color;
+  final bool isPreparing;
+  final String? message;
+  final String retryLabel;
+  final VoidCallback? onRetry;
+  final VoidCallback? onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[
+      Icon(
+        Icons.camera_alt_outlined,
+        size: 44,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ];
+
+    if (isPreparing) {
+      children.addAll([
+        const SizedBox(height: 12),
+        const SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        ),
+        const SizedBox(height: 12),
+        const Text('Preparing camera...'),
+      ]);
+    } else if (message != null) {
+      children.addAll([
+        const SizedBox(height: 12),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 280),
+          child: Text(
+            message!,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      ]);
+
+      if (onRetry != null || onOpenSettings != null) {
+        children.add(const SizedBox(height: 12));
+        children.add(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              if (onRetry != null)
+                OutlinedButton(onPressed: onRetry, child: Text(retryLabel)),
+              if (onOpenSettings != null)
+                FilledButton(
+                  onPressed: onOpenSettings,
+                  child: const Text('Open settings'),
+                ),
+            ],
+          ),
+        );
+      }
+    }
+
+    return DecoratedBox(
+      decoration: BoxDecoration(color: color),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(mainAxisSize: MainAxisSize.min, children: children),
+        ),
+      ),
     );
   }
 }

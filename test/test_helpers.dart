@@ -210,7 +210,7 @@ class FakeSrsRepository implements SrsRepository {
 
 ProviderScope testScope({
   required Widget child,
-  FakeFrameSource? frameSource,
+  FrameSource? frameSource,
   TutorGenerationService? tutorService,
   FakeSpeechService? speechService,
   FakeSrsRepository? srsRepository,
@@ -236,7 +236,7 @@ ProviderScope testScope({
 Future<void> pumpTestWidget(
   WidgetTester tester, {
   required Widget child,
-  FakeFrameSource? frameSource,
+  FrameSource? frameSource,
   TutorGenerationService? tutorService,
   FakeSpeechService? speechService,
   FakeSrsRepository? srsRepository,

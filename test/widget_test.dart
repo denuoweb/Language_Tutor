@@ -1,12 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'dart:async';
 import 'package:language_tutor/features/capture/capture_screen.dart';
+import 'package:language_tutor/features/capture/phone_camera_frame_source.dart';
 import 'package:language_tutor/features/settings/app_settings.dart';
 import 'package:language_tutor/features/settings/settings_repository.dart';
 import 'package:language_tutor/features/settings/settings_screen.dart';
 import 'package:language_tutor/features/srs/review_grade.dart';
 import 'package:language_tutor/features/srs/review_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'test_helpers.dart';
 
@@ -62,6 +65,85 @@ void main() {
     expect(find.text('There is a notebook.'), findsOneWidget);
     expect(srs.insertedLessons, hasLength(1));
   });
+
+  testWidgets(
+    'capture screen shows permission retry UI when camera is denied',
+    (tester) async {
+      var requestCount = 0;
+      final frameSource = PhoneCameraFrameSource(
+        permissionStatus: () async => PermissionStatus.denied,
+        requestPermission: () async {
+          requestCount++;
+          return PermissionStatus.denied;
+        },
+      );
+      addTearDown(frameSource.dispose);
+
+      await pumpTestWidget(
+        tester,
+        child: const CaptureScreen(),
+        frameSource: frameSource,
+        tutorService: FakeTutorGenerationService(lessonFixture()),
+        speechService: FakeSpeechService(),
+        srsRepository: FakeSrsRepository(),
+        settingsRepository: FakeSettingsRepository(),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Camera access is required to show the preview and capture lessons.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Allow camera'), findsOneWidget);
+      expect(requestCount, 1);
+
+      await tester.tap(find.text('Allow camera'));
+      await tester.pumpAndSettle();
+
+      expect(requestCount, 2);
+    },
+  );
+
+  testWidgets(
+    'capture screen sends permanently denied users to system settings',
+    (tester) async {
+      var settingsOpenCount = 0;
+      final frameSource = PhoneCameraFrameSource(
+        permissionStatus: () async => PermissionStatus.permanentlyDenied,
+        openSettings: () async {
+          settingsOpenCount++;
+          return true;
+        },
+      );
+      addTearDown(frameSource.dispose);
+
+      await pumpTestWidget(
+        tester,
+        child: const CaptureScreen(),
+        frameSource: frameSource,
+        tutorService: FakeTutorGenerationService(lessonFixture()),
+        speechService: FakeSpeechService(),
+        srsRepository: FakeSrsRepository(),
+        settingsRepository: FakeSettingsRepository(),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Camera access is turned off for this app. Enable it in system settings.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Open settings'), findsOneWidget);
+
+      await tester.tap(find.text('Open settings'));
+      await tester.pumpAndSettle();
+
+      expect(settingsOpenCount, 1);
+    },
+  );
 
   testWidgets('review screen reveals and grades due card', (tester) async {
     final srs = FakeSrsRepository();

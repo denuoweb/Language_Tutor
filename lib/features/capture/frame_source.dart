@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'camera_frame.dart';
 
 abstract interface class FrameSource {
@@ -7,5 +9,5 @@ abstract interface class FrameSource {
 
   Future<void> stop();
 
-  Future<void> dispose();
+  FutureOr<void> dispose();
 }
