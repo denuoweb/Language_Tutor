@@ -56,8 +56,8 @@ class SettingsScreen extends ConsumerWidget {
               title: const Text('Firebase AI Logic'),
               subtitle: Text(
                 FirebaseBootstrap.liveGeminiEnabled
-                    ? 'Live Gemini enabled'
-                    : 'Demo Gemini service',
+                    ? 'Live Gemini on mobile'
+                    : 'Demo Gemini fallback',
               ),
             ),
           ),

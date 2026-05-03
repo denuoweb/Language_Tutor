@@ -2,8 +2,8 @@
 
 This app runs in two modes:
 
-1. Demo mode: no Firebase project, no secrets, deterministic local Gemini substitute.
-2. Live Gemini mode: Firebase AI Logic calls Gemini 2.5 Flash from Flutter.
+1. Live Gemini mode on Android and iOS: Firebase AI Logic calls Gemini 2.5 Flash from Flutter.
+2. Demo mode fallback on unsupported platforms: deterministic local Gemini substitute.
 
 We use Gemini 2.5 Flash through Firebase AI Logic, Google's official mobile SDK path for calling Gemini from Flutter.
 
@@ -48,7 +48,7 @@ Generate Drift and JSON code:
 dart run build_runner build
 ```
 
-Run the default local demo mode:
+Run the app:
 
 ```sh
 flutter run
@@ -115,13 +115,8 @@ Enable Firebase AI Logic:
 6. Let Firebase enable the required APIs and create the Gemini API key.
 7. Do not paste that Gemini API key into Flutter code.
 
-Run live Gemini mode:
-
-```sh
-flutter run --dart-define=FIREBASE_AI_ENABLED=true
-```
-
-The app defaults to demo mode unless `FIREBASE_AI_ENABLED=true` is provided.
+After Firebase is configured for Android and iOS, `flutter run` uses the live
+Firebase AI Logic path by default on those platforms.
 
 ## Android Toolchain Overrides
 
@@ -194,7 +189,6 @@ dart format --set-exit-if-changed .
 flutter analyze
 flutter test
 flutter run
-flutter run --dart-define=FIREBASE_AI_ENABLED=true
 ```
 
 If Gradle reports corrupted Kotlin DSL metadata such as `metadata.bin`, clear that

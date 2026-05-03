@@ -26,7 +26,10 @@ class FirebaseTutorGenerationService implements TutorGenerationService {
 You are an ambient Japanese language tutor.
 Analyze the camera image. Select exactly one useful visible object, action, or scene.
 Return one level-appropriate Japanese learning item only.
+Prefer ordinary daily-life phrases.
 Use natural Japanese, include kana reading, and keep grammar notes short.
+Keep the grammar note under 20 words.
+Avoid rare vocabulary unless the image clearly requires it.
 Do not invent objects or actions not visible in the image.
 ''';
 
@@ -53,14 +56,53 @@ Do not invent objects or actions not visible in the image.
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Gemini response was not a JSON object.');
     }
-    return TutorResult.fromJson(decoded);
+    final result = TutorResult.fromJson(decoded);
+    _validateResult(result);
+    return result;
   }
 
   String _prompt(JlptLevel level) {
     return '''
 Target language: Japanese.
 Target level: ${level.label}.
-Return JSON matching the provided response schema.
+
+Rules:
+- Return one useful learning item only.
+- Use the image as the source of truth.
+- Include one natural Japanese sentence, kana reading, English meaning, vocabulary, a short grammar note, and confidence.
+- Return JSON matching the provided response schema.
 ''';
+  }
+
+  void _validateResult(TutorResult result) {
+    if (result.sceneLabel.trim().isEmpty ||
+        result.english.trim().isEmpty ||
+        result.japanese.trim().isEmpty ||
+        result.reading.trim().isEmpty ||
+        result.grammarNote.trim().isEmpty) {
+      throw const FormatException(
+        'Gemini response was missing required lesson content.',
+      );
+    }
+
+    if (result.keyVocabulary.isEmpty) {
+      throw const FormatException(
+        'Gemini response must include at least one vocabulary item.',
+      );
+    }
+
+    if (_wordCount(result.grammarNote) > 20) {
+      throw const FormatException(
+        'Gemini grammar note exceeded the 20-word limit.',
+      );
+    }
+  }
+
+  int _wordCount(String value) {
+    return value
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .length;
   }
 }
