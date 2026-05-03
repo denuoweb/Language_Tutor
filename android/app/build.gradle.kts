@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,10 +7,39 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val localProperties =
+    Properties().apply {
+        val file = rootProject.file("local.properties")
+        if (file.exists()) {
+            file.inputStream().use { load(it) }
+        }
+    }
+
+val configuredNdkDir =
+    localProperties.getProperty("ndk.dir")
+        ?: System.getenv("ANDROID_NDK_HOME")
+        ?: System.getenv("ANDROID_NDK_ROOT")
+
+val configuredNdkVersion =
+    configuredNdkDir?.let { ndkDir ->
+        val sourceProperties = file("$ndkDir/source.properties")
+        if (!sourceProperties.exists()) {
+            null
+        } else {
+            Properties().apply {
+                sourceProperties.inputStream().use { load(it) }
+            }.getProperty("Pkg.Revision")
+        }
+    }
+
 android {
     namespace = "com.denuoweb.language_tutor"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    if (!configuredNdkVersion.isNullOrBlank()) {
+        ndkVersion = configuredNdkVersion
+    } else if (configuredNdkDir.isNullOrBlank()) {
+        ndkVersion = flutter.ndkVersion
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
