@@ -9,6 +9,7 @@ import 'package:language_tutor/data/database/app_database.dart';
 import 'package:language_tutor/data/models/tutor_result.dart';
 import 'package:language_tutor/features/capture/camera_frame.dart';
 import 'package:language_tutor/features/capture/frame_source.dart';
+import 'package:language_tutor/features/capture/phone_camera_frame_source.dart';
 import 'package:language_tutor/features/gemini/tutor_generation_service.dart';
 import 'package:language_tutor/features/settings/app_settings.dart';
 import 'package:language_tutor/features/settings/settings_repository.dart';
@@ -220,6 +221,8 @@ ProviderScope testScope({
     overrides: [
       if (frameSource != null)
         frameSourceProvider.overrideWithValue(frameSource),
+      if (frameSource is PhoneCameraFrameSource)
+        phoneCameraFrameSourceProvider.overrideWithValue(frameSource),
       if (tutorService != null)
         tutorGenerationServiceProvider.overrideWithValue(tutorService),
       if (speechService != null)

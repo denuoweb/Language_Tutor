@@ -42,32 +42,42 @@ void main() {
     expect(find.textContaining('settings unavailable'), findsOneWidget);
   });
 
-  testWidgets('capture screen displays generated demo lesson', (tester) async {
-    final frameSource = FakeFrameSource();
-    final srs = FakeSrsRepository();
-    await pumpTestWidget(
-      tester,
-      child: const CaptureScreen(),
-      frameSource: frameSource,
-      tutorService: FakeTutorGenerationService(lessonFixture()),
-      speechService: FakeSpeechService(),
-      srsRepository: srs,
-      settingsRepository: FakeSettingsRepository(),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'capture screen starts ambient learning and generates a demo lesson',
+    (tester) async {
+      final frameSource = FakeFrameSource();
+      final srs = FakeSrsRepository();
+      await pumpTestWidget(
+        tester,
+        child: const CaptureScreen(),
+        frameSource: frameSource,
+        tutorService: FakeTutorGenerationService(lessonFixture()),
+        speechService: FakeSpeechService(),
+        srsRepository: srs,
+        settingsRepository: FakeSettingsRepository(),
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.play_arrow));
-    await tester.pump();
-    frameSource.emit(frameFixture());
-    await tester.pumpAndSettle();
+      expect(find.text('Start Ambient Learning'), findsOneWidget);
 
-    expect(find.text('ここにノートがあります。'), findsWidgets);
-    expect(find.text('There is a notebook.'), findsOneWidget);
-    expect(srs.insertedLessons, hasLength(1));
-  });
+      await tester.tap(find.text('Start Ambient Learning'));
+      await tester.pumpAndSettle();
+      expect(frameSource.started, isTrue);
+      expect(find.text('Stop Ambient Learning'), findsOneWidget);
+
+      frameSource.emit(frameFixture());
+      await tester.idle();
+      await tester.pump();
+      await tester.idle();
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(srs.insertedLessons, hasLength(1));
+    },
+  );
 
   testWidgets(
-    'capture screen shows permission retry UI when camera is denied',
+    'capture screen only requests phone camera permission after start is pressed',
     (tester) async {
       var requestCount = 0;
       final frameSource = PhoneCameraFrameSource(
@@ -88,6 +98,15 @@ void main() {
         srsRepository: FakeSrsRepository(),
         settingsRepository: FakeSettingsRepository(),
       );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Press Start Ambient Learning to open the camera.'),
+        findsOneWidget,
+      );
+      expect(requestCount, 0);
+
+      await tester.tap(find.text('Start Ambient Learning'));
       await tester.pumpAndSettle();
 
       expect(
@@ -128,6 +147,15 @@ void main() {
         srsRepository: FakeSrsRepository(),
         settingsRepository: FakeSettingsRepository(),
       );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Press Start Ambient Learning to open the camera.'),
+        findsOneWidget,
+      );
+      expect(settingsOpenCount, 0);
+
+      await tester.tap(find.text('Start Ambient Learning'));
       await tester.pumpAndSettle();
 
       expect(
