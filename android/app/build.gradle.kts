@@ -18,6 +18,27 @@ val localProperties =
         }
     }
 
+val githubToken = System.getenv("GITHUB_TOKEN") ?: localProperties.getProperty("github_token")
+val metaDatEnabled = localProperties.getProperty("meta.dat.enabled")?.toBoolean() ?: false
+val metaDatVersion = localProperties.getProperty("meta.dat.version") ?: "0.6.0"
+val metaDatApplicationId = localProperties.getProperty("meta.dat.application.id") ?: ""
+val metaDatAnalyticsOptOut =
+    localProperties.getProperty("meta.dat.analytics.opt_out")?.toBoolean() ?: true
+
+if (metaDatEnabled && githubToken.isNullOrBlank()) {
+    throw GradleException(
+        "Meta DAT Android build is enabled, but github_token/GITHUB_TOKEN is missing. " +
+            "Add github_token to android/local.properties or export GITHUB_TOKEN.",
+    )
+}
+
+if (metaDatEnabled && metaDatApplicationId.isBlank()) {
+    throw GradleException(
+        "Meta DAT Android build is enabled, but meta.dat.application.id is missing. " +
+            "Add the Wearables Developer Center application ID to android/local.properties.",
+    )
+}
+
 val configuredNdkDirFromProperties = localProperties.getProperty("ndk.dir")
 
 val configuredNdkPathOverride =
@@ -65,6 +86,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
@@ -84,10 +109,24 @@ android {
         applicationId = "com.denuoweb.language_tutor"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = if (metaDatEnabled) maxOf(flutter.minSdkVersion, 31) else flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["metaDatApplicationId"] =
+            if (metaDatApplicationId.isBlank()) "disabled" else metaDatApplicationId
+        manifestPlaceholders["metaDatAnalyticsOptOut"] = metaDatAnalyticsOptOut.toString()
+        buildConfigField("boolean", "META_DAT_ENABLED", metaDatEnabled.toString())
+        buildConfigField(
+            "String",
+            "META_DAT_APPLICATION_ID",
+            "\"${metaDatApplicationId}\"",
+        )
+        buildConfigField(
+            "boolean",
+            "META_DAT_ANALYTICS_OPT_OUT",
+            metaDatAnalyticsOptOut.toString(),
+        )
     }
 
     buildTypes {
@@ -103,4 +142,12 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    if (metaDatEnabled) {
+        implementation("com.meta.wearable:mwdat-core:$metaDatVersion")
+        implementation("com.meta.wearable:mwdat-camera:$metaDatVersion")
+        implementation("com.meta.wearable:mwdat-mockdevice:$metaDatVersion")
+    }
 }

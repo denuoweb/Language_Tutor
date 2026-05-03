@@ -8,6 +8,12 @@
         android:label="language_tutor"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="com.meta.wearable.mwdat.APPLICATION_ID"
+            android:value="${metaDatApplicationId}" />
+        <meta-data
+            android:name="com.meta.wearable.mwdat.ANALYTICS_OPT_OUT"
+            android:value="${metaDatAnalyticsOptOut}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

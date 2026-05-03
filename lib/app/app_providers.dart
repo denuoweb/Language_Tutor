@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database/app_database.dart';
 import '../features/capture/frame_source.dart';
 import '../features/capture/phone_camera_frame_source.dart';
+import '../features/capture/ray_ban_native_bridge.dart';
 import '../features/capture/ray_ban_frame_source.dart';
 import '../features/gemini/demo_tutor_generation_service.dart';
 import '../features/gemini/firebase_bootstrap.dart';
@@ -42,9 +43,13 @@ final phoneCameraFrameSourceProvider = Provider<PhoneCameraFrameSource>((ref) {
 });
 
 final rayBanFrameSourceProvider = Provider<RayBanFrameSource>((ref) {
-  final source = RayBanFrameSource();
+  final source = RayBanFrameSource(bridge: ref.watch(rayBanNativeBridgeProvider));
   ref.onDispose(source.dispose);
   return source;
+});
+
+final rayBanNativeBridgeProvider = Provider<RayBanNativeBridge>((ref) {
+  return RayBanNativeBridge();
 });
 
 final frameSourceProvider = Provider<FrameSource>((ref) {
