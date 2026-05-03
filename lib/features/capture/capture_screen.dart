@@ -48,8 +48,7 @@ class CaptureScreen extends ConsumerWidget {
                     ),
                   ],
                   selected: {selectedSource},
-                  onSelectionChanged:
-                      capture.isRunning || capture.isGenerating
+                  onSelectionChanged: capture.isRunning || capture.isGenerating
                       ? null
                       : (selection) {
                           if (selection.isEmpty) {
@@ -113,8 +112,8 @@ class CaptureScreen extends ConsumerWidget {
                       ),
                       label: Text(
                         capture.isRunning
-                            ? 'Stop ${selectedSource.label}'
-                            : 'Start ${selectedSource.label}',
+                            ? 'Stop Ambient Learning'
+                            : 'Start Ambient Learning',
                       ),
                     ),
                   ],
@@ -191,19 +190,12 @@ class _PhoneCameraPreviewPanelState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    final frameSource = ref.read(phoneCameraFrameSourceProvider);
-    _phoneCameraFrameSource = frameSource;
-    frameSource.attachPreview();
+    _phoneCameraFrameSource = ref.read(phoneCameraFrameSourceProvider);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    final frameSource = _phoneCameraFrameSource;
-    if (frameSource != null) {
-      unawaited(frameSource.detachPreview());
-    }
     super.dispose();
   }
 
@@ -241,7 +233,9 @@ class _PhoneCameraPreviewPanelState
                   color: placeholderColor,
                   icon: Icons.camera_alt_outlined,
                   isPreparing: phoneCamera.isPreparingPreview,
-                  message: phoneCamera.previewMessage,
+                  message:
+                      phoneCamera.previewMessage ??
+                      'Press Start Ambient Learning to open the camera.',
                   retryLabel: phoneCamera.canRequestPermission
                       ? 'Allow camera'
                       : 'Retry',
@@ -274,7 +268,8 @@ class _RayBanPreviewPanel extends ConsumerStatefulWidget {
   const _RayBanPreviewPanel({super.key});
 
   @override
-  ConsumerState<_RayBanPreviewPanel> createState() => _RayBanPreviewPanelState();
+  ConsumerState<_RayBanPreviewPanel> createState() =>
+      _RayBanPreviewPanelState();
 }
 
 class _RayBanPreviewPanelState extends ConsumerState<_RayBanPreviewPanel> {

@@ -7,19 +7,27 @@ import '../../shared/clock.dart';
 import '../settings/settings_controller.dart';
 import 'camera_frame.dart';
 import 'capture_state.dart';
+import 'frame_source.dart';
 
 class CaptureController extends Notifier<CaptureState> {
   StreamSubscription<CameraFrame>? _frameSubscription;
+  FrameSource? _activeFrameSource;
   bool _generationInFlight = false;
   int _activeSession = 0;
 
   @override
   CaptureState build() {
-    final frameSource = ref.read(frameSourceProvider);
     ref.onDispose(() {
       _activeSession++;
+      _generationInFlight = false;
       unawaited(_frameSubscription?.cancel());
-      unawaited(frameSource.stop());
+      _frameSubscription = null;
+
+      final frameSource = _activeFrameSource;
+      _activeFrameSource = null;
+      if (frameSource != null) {
+        unawaited(frameSource.stop());
+      }
     });
     return CaptureState.initial();
   }
@@ -30,47 +38,65 @@ class CaptureController extends Notifier<CaptureState> {
     }
 
     final settings = await ref.read(settingsControllerProvider.future);
+    if (!ref.mounted) {
+      return;
+    }
+
+    final frameSource = ref.read(frameSourceProvider);
     final session = ++_activeSession;
     state = state.copyWith(isRunning: true, clearError: true);
 
     await _frameSubscription?.cancel();
-    _frameSubscription = ref
-        .read(frameSourceProvider)
-        .frames
-        .listen(
-          (frame) {
-            unawaited(_processFrame(frame, session));
-          },
-          onError: (Object error) {
-            if (session == _activeSession) {
-              state = state.copyWith(errorMessage: error.toString());
-            }
-          },
-        );
+    _frameSubscription = frameSource.frames.listen(
+      (frame) {
+        unawaited(_processFrame(frame, session));
+      },
+      onError: (Object error) {
+        if (ref.mounted && session == _activeSession) {
+          state = state.copyWith(errorMessage: error.toString());
+        }
+      },
+    );
+    _activeFrameSource = frameSource;
 
     try {
-      await ref
-          .read(frameSourceProvider)
-          .start(interval: settings.captureInterval);
+      await frameSource.start(interval: settings.captureInterval);
     } catch (error) {
       if (session == _activeSession) {
-        await stop();
-        state = state.copyWith(errorMessage: error.toString());
+        await _stopActiveCapture();
+        if (ref.mounted) {
+          state = state.copyWith(errorMessage: error.toString());
+        }
       }
     }
   }
 
   Future<void> stop() async {
+    await _stopActiveCapture();
+  }
+
+  Future<void> _stopActiveCapture() async {
     _activeSession++;
     _generationInFlight = false;
     await _frameSubscription?.cancel();
     _frameSubscription = null;
-    await ref.read(frameSourceProvider).stop();
-    state = state.copyWith(isRunning: false, isGenerating: false);
+
+    final frameSource = _activeFrameSource;
+    _activeFrameSource = null;
+    if (frameSource != null) {
+      await frameSource.stop();
+    }
+
+    if (ref.mounted) {
+      state = state.copyWith(isRunning: false, isGenerating: false);
+    }
   }
 
   Future<void> _processFrame(CameraFrame frame, int session) async {
-    if (_generationInFlight || session != _activeSession || !state.isRunning) {
+    if (!ref.mounted ||
+        _generationInFlight ||
+        session != _activeSession ||
+        !state.isRunning) {
       return;
     }
 
@@ -78,11 +104,15 @@ class CaptureController extends Notifier<CaptureState> {
     state = state.copyWith(isGenerating: true, clearError: true);
     try {
       final settings = await ref.read(settingsControllerProvider.future);
+      if (!ref.mounted || session != _activeSession || !state.isRunning) {
+        return;
+      }
+
       final lesson = await ref
           .read(tutorGenerationServiceProvider)
           .generateFromFrame(frame: frame, level: settings.level);
 
-      if (session != _activeSession || !state.isRunning) {
+      if (!ref.mounted || session != _activeSession || !state.isRunning) {
         return;
       }
 
@@ -102,7 +132,7 @@ class CaptureController extends Notifier<CaptureState> {
             source: frame.source,
           );
 
-      if (session != _activeSession || !state.isRunning) {
+      if (!ref.mounted || session != _activeSession || !state.isRunning) {
         return;
       }
 
@@ -113,11 +143,11 @@ class CaptureController extends Notifier<CaptureState> {
         );
       }
     } catch (error) {
-      if (session == _activeSession && state.isRunning) {
+      if (ref.mounted && session == _activeSession && state.isRunning) {
         state = state.copyWith(errorMessage: error.toString());
       }
     } finally {
-      if (session == _activeSession && state.isRunning) {
+      if (ref.mounted && session == _activeSession && state.isRunning) {
         _generationInFlight = false;
         state = state.copyWith(isGenerating: false);
       }

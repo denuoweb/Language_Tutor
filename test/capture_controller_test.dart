@@ -6,6 +6,40 @@ import 'package:language_tutor/features/capture/capture_controller.dart';
 import 'test_helpers.dart';
 
 void main() {
+  test(
+    'successful generation updates the current lesson and saves it',
+    () async {
+      final frameSource = FakeFrameSource();
+      final tutor = FakeTutorGenerationService(lessonFixture());
+      final srs = FakeSrsRepository();
+      final speech = FakeSpeechService();
+      final container = ProviderContainer(
+        overrides: [
+          frameSourceProvider.overrideWithValue(frameSource),
+          tutorGenerationServiceProvider.overrideWithValue(tutor),
+          srsRepositoryProvider.overrideWithValue(srs),
+          settingsRepositoryProvider.overrideWithValue(
+            FakeSettingsRepository(),
+          ),
+          speechServiceProvider.overrideWithValue(speech),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(srs.dispose);
+
+      await container.read(captureControllerProvider.notifier).start();
+      frameSource.emit(frameFixture());
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      final state = container.read(captureControllerProvider);
+      expect(state.currentLesson?.english, 'There is a notebook.');
+      expect(srs.insertedLessons, hasLength(1));
+      expect(speech.spoken, ['ここにノートがあります。']);
+    },
+  );
+
   test('low confidence generation is rejected before saving', () async {
     final frameSource = FakeFrameSource();
     final tutor = FakeTutorGenerationService(lessonFixture(confidence: 0.2));
