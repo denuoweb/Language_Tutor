@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../gemini/firebase_bootstrap.dart';
 import 'app_settings.dart';
+import 'learning_preferences_fields.dart';
 import 'settings_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -15,6 +16,32 @@ class SettingsScreen extends ConsumerWidget {
       data: (value) => ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Learning preferences',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  LearningPreferencesFields(
+                    settings: value,
+                    enabled: true,
+                    onLanguageChanged: (language) => ref
+                        .read(settingsControllerProvider.notifier)
+                        .setLanguage(language),
+                    onLevelChanged: (level) => ref
+                        .read(settingsControllerProvider.notifier)
+                        .setLevel(level),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),

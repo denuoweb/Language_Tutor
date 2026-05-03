@@ -7,8 +7,8 @@ class TutorResult {
   const TutorResult({
     required this.sceneLabel,
     required this.english,
-    required this.japanese,
-    required this.reading,
+    required this.targetText,
+    required this.pronunciation,
     required this.keyVocabulary,
     required this.grammarNote,
     required this.confidence,
@@ -20,8 +20,8 @@ class TutorResult {
   static const requiredJsonKeys = <String>[
     'sceneLabel',
     'english',
-    'japanese',
-    'reading',
+    'targetText',
+    'pronunciation',
     'keyVocabulary',
     'grammarNote',
     'confidence',
@@ -29,8 +29,8 @@ class TutorResult {
 
   final String sceneLabel;
   final String english;
-  final String japanese;
-  final String reading;
+  final String targetText;
+  final String pronunciation;
   final List<VocabItem> keyVocabulary;
   final String grammarNote;
   final double confidence;
@@ -41,19 +41,19 @@ class TutorResult {
 @JsonSerializable(checked: true, disallowUnrecognizedKeys: true)
 class VocabItem {
   const VocabItem({
-    required this.japanese,
-    required this.reading,
+    required this.targetText,
+    required this.pronunciation,
     required this.meaning,
-    required this.approxJlpt,
+    required this.approxLevel,
   });
 
   factory VocabItem.fromJson(Map<String, dynamic> json) =>
       _$VocabItemFromJson(json);
 
-  final String japanese;
-  final String reading;
+  final String targetText;
+  final String pronunciation;
   final String meaning;
-  final String approxJlpt;
+  final String approxLevel;
 
   Map<String, dynamic> toJson() => _$VocabItemToJson(this);
 }

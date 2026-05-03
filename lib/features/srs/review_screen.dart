@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/target_language.dart';
 import 'due_cards_provider.dart';
 import 'review_controller.dart';
 import 'review_grade.dart';
@@ -25,19 +26,32 @@ class ReviewScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final card = cards[index];
             final revealed = review.isRevealed(card.id);
+            final language = TargetLanguage.fromCode(card.targetLanguage);
             return Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Chip(label: Text(language.label)),
+                        Chip(label: Text(card.targetLevel)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     Text(
-                      card.japanese,
+                      card.targetText,
+                      textDirection: language.isRightToLeft
+                          ? TextDirection.rtl
+                          : TextDirection.ltr,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     if (revealed) ...[
                       const SizedBox(height: 8),
-                      Text(card.reading),
+                      Text(card.pronunciation),
                       const SizedBox(height: 8),
                       Text(card.english),
                       const SizedBox(height: 8),
@@ -108,7 +122,7 @@ class _VocabularyLine extends ConsumerWidget {
           for (final item in items)
             Chip(
               label: Text(
-                '${item.japanese} · ${item.reading} · ${item.meaning}',
+                '${item.targetText} · ${item.pronunciation} · ${item.meaning}',
               ),
             ),
         ],

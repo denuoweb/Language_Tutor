@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app_providers.dart';
-import '../../shared/jlpt_level.dart';
 import '../lessons/lesson_card.dart';
+import '../settings/learning_preferences_fields.dart';
 import '../settings/settings_controller.dart';
 import 'capture_controller.dart';
 import 'frame_source.dart';
@@ -60,63 +60,45 @@ class CaptureScreen extends ConsumerWidget {
                         },
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: settings.when(
-                        data: (value) => DropdownButtonFormField<JlptLevel>(
-                          initialValue: value.level,
-                          decoration: const InputDecoration(
-                            labelText: 'Level',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: [
-                            for (final level in JlptLevel.values)
-                              DropdownMenuItem(
-                                value: level,
-                                child: Text(level.label),
-                              ),
-                          ],
-                          onChanged: capture.isRunning
-                              ? null
-                              : (level) {
-                                  if (level != null) {
-                                    ref
-                                        .read(
-                                          settingsControllerProvider.notifier,
-                                        )
-                                        .setLevel(level);
-                                  }
-                                },
-                        ),
-                        loading: () => const LinearProgressIndicator(),
-                        error: (error, _) => Text(error.toString()),
-                      ),
+                settings.when(
+                  data: (value) => LearningPreferencesFields(
+                    settings: value,
+                    enabled: !capture.isRunning,
+                    onLanguageChanged: (language) => ref
+                        .read(settingsControllerProvider.notifier)
+                        .setLanguage(language),
+                    onLevelChanged: (level) => ref
+                        .read(settingsControllerProvider.notifier)
+                        .setLevel(level),
+                  ),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (error, _) => Text(error.toString()),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: capture.isGenerating
+                        ? null
+                        : () {
+                            final controller = ref.read(
+                              captureControllerProvider.notifier,
+                            );
+                            if (capture.isRunning) {
+                              controller.stop();
+                            } else {
+                              controller.start();
+                            }
+                          },
+                    icon: Icon(
+                      capture.isRunning ? Icons.stop : Icons.play_arrow,
                     ),
-                    const SizedBox(width: 12),
-                    FilledButton.icon(
-                      onPressed: capture.isGenerating
-                          ? null
-                          : () {
-                              final controller = ref.read(
-                                captureControllerProvider.notifier,
-                              );
-                              if (capture.isRunning) {
-                                controller.stop();
-                              } else {
-                                controller.start();
-                              }
-                            },
-                      icon: Icon(
-                        capture.isRunning ? Icons.stop : Icons.play_arrow,
-                      ),
-                      label: Text(
-                        capture.isRunning
-                            ? 'Stop Ambient Learning'
-                            : 'Start Ambient Learning',
-                      ),
+                    label: Text(
+                      capture.isRunning
+                          ? 'Stop Ambient Learning'
+                          : 'Start Ambient Learning',
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 12),
                 settings.maybeWhen(
@@ -149,7 +131,14 @@ class CaptureScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         if (capture.currentLesson != null)
-          LessonCard(lesson: capture.currentLesson!)
+          settings.maybeWhen(
+            data: (value) => LessonCard(
+              lesson: capture.currentLesson!,
+              language: value.language,
+              level: value.level,
+            ),
+            orElse: () => const SizedBox.shrink(),
+          )
         else
           const _EmptyLessonPanel(),
       ],

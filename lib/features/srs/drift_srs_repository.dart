@@ -3,7 +3,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../data/database/app_database.dart';
 import '../../data/models/tutor_result.dart';
-import '../../shared/jlpt_level.dart';
+import '../../shared/proficiency_level.dart';
+import '../../shared/target_language.dart';
 import 'review_grade.dart';
 import 'srs_repository.dart';
 import 'srs_scheduler.dart';
@@ -30,7 +31,8 @@ class DriftSrsRepository implements SrsRepository {
   @override
   Future<LearningCard?> insertGeneratedCard({
     required TutorResult lesson,
-    required JlptLevel targetLevel,
+    required TargetLanguage targetLanguage,
+    required ProficiencyLevel targetLevel,
     required DateTime now,
     required String source,
   }) {
@@ -56,9 +58,10 @@ class DriftSrsRepository implements SrsRepository {
         id: cardId,
         sceneLabel: lesson.sceneLabel,
         english: lesson.english,
-        japanese: lesson.japanese,
-        reading: lesson.reading,
+        targetText: lesson.targetText,
+        pronunciation: lesson.pronunciation,
         grammarNote: lesson.grammarNote,
+        targetLanguage: targetLanguage.code,
         targetLevel: targetLevel.label,
         source: source,
         createdAt: nowMillis,
@@ -77,10 +80,12 @@ class DriftSrsRepository implements SrsRepository {
               VocabItemsCompanion.insert(
                 id: _uuid.v4(),
                 cardId: cardId,
-                japanese: vocab.japanese,
-                reading: vocab.reading,
+                targetText: vocab.targetText,
+                pronunciation: vocab.pronunciation,
                 meaning: vocab.meaning,
-                approxJlpt: vocab.approxJlpt,
+                approxLevel: ProficiencyLevel.normalizeApproxLevel(
+                  vocab.approxLevel,
+                ),
               ),
             );
       }
@@ -166,7 +171,7 @@ class DriftSrsRepository implements SrsRepository {
 
   String _primaryVocabFor(TutorResult lesson) {
     if (lesson.keyVocabulary.isNotEmpty) {
-      return lesson.keyVocabulary.first.japanese.trim();
+      return lesson.keyVocabulary.first.targetText.trim();
     }
     return lesson.sceneLabel.trim().toLowerCase();
   }

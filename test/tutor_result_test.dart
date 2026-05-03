@@ -8,14 +8,14 @@ void main() {
     final result = TutorResult.fromJson({
       'sceneLabel': 'desk',
       'english': 'There is a notebook.',
-      'japanese': 'ここにノートがあります。',
-      'reading': 'ここにノートがあります。',
+      'targetText': 'ここにノートがあります。',
+      'pronunciation': 'ここにノートがあります。',
       'keyVocabulary': [
         {
-          'japanese': 'ノート',
-          'reading': 'ノート',
+          'targetText': 'ノート',
+          'pronunciation': 'ノート',
           'meaning': 'notebook',
-          'approxJlpt': 'N5',
+          'approxLevel': 'Beginner',
         },
       ],
       'grammarNote': 'あります marks existence.',

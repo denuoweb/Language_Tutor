@@ -110,7 +110,11 @@ class CaptureController extends Notifier<CaptureState> {
 
       final lesson = await ref
           .read(tutorGenerationServiceProvider)
-          .generateFromFrame(frame: frame, level: settings.level);
+          .generateFromFrame(
+            frame: frame,
+            language: settings.language,
+            level: settings.level,
+          );
 
       if (!ref.mounted || session != _activeSession || !state.isRunning) {
         return;
@@ -127,6 +131,7 @@ class CaptureController extends Notifier<CaptureState> {
           .read(srsRepositoryProvider)
           .insertGeneratedCard(
             lesson: lesson,
+            targetLanguage: settings.language,
             targetLevel: settings.level,
             now: systemNow(),
             source: frame.source,
@@ -139,7 +144,9 @@ class CaptureController extends Notifier<CaptureState> {
       state = state.copyWith(currentLesson: lesson, clearError: true);
       if (!settings.ttsMuted) {
         unawaited(
-          ref.read(speechServiceProvider).speakJapanese(lesson.japanese),
+          ref
+              .read(speechServiceProvider)
+              .speakText(lesson.targetText, language: settings.language),
         );
       }
     } catch (error) {

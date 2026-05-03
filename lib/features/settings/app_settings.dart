@@ -1,7 +1,9 @@
-import '../../shared/jlpt_level.dart';
+import '../../shared/proficiency_level.dart';
+import '../../shared/target_language.dart';
 
 class AppSettings {
   const AppSettings({
+    required this.language,
     required this.level,
     required this.captureInterval,
     required this.ttsMuted,
@@ -12,22 +14,26 @@ class AppSettings {
 
   factory AppSettings.defaults() {
     return const AppSettings(
-      level: JlptLevel.n5,
+      language: TargetLanguage.japanese,
+      level: ProficiencyLevel.beginner,
       captureInterval: defaultCaptureInterval,
       ttsMuted: false,
     );
   }
 
-  final JlptLevel level;
+  final TargetLanguage language;
+  final ProficiencyLevel level;
   final Duration captureInterval;
   final bool ttsMuted;
 
   AppSettings copyWith({
-    JlptLevel? level,
+    TargetLanguage? language,
+    ProficiencyLevel? level,
     Duration? captureInterval,
     bool? ttsMuted,
   }) {
     return AppSettings(
+      language: language ?? this.language,
       level: level ?? this.level,
       captureInterval: _clampInterval(captureInterval ?? this.captureInterval),
       ttsMuted: ttsMuted ?? this.ttsMuted,

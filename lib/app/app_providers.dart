@@ -43,7 +43,9 @@ final phoneCameraFrameSourceProvider = Provider<PhoneCameraFrameSource>((ref) {
 });
 
 final rayBanFrameSourceProvider = Provider<RayBanFrameSource>((ref) {
-  final source = RayBanFrameSource(bridge: ref.watch(rayBanNativeBridgeProvider));
+  final source = RayBanFrameSource(
+    bridge: ref.watch(rayBanNativeBridgeProvider),
+  );
   ref.onDispose(source.dispose);
   return source;
 });

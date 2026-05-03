@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:language_tutor/app/app_providers.dart';
 import 'package:language_tutor/features/capture/capture_controller.dart';
+import 'package:language_tutor/shared/target_language.dart';
 
 import 'test_helpers.dart';
 
@@ -36,7 +37,8 @@ void main() {
       final state = container.read(captureControllerProvider);
       expect(state.currentLesson?.english, 'There is a notebook.');
       expect(srs.insertedLessons, hasLength(1));
-      expect(speech.spoken, ['ここにノートがあります。']);
+      expect(speech.spoken.single.text, 'ここにノートがあります。');
+      expect(speech.spoken.single.language, TargetLanguage.japanese);
     },
   );
 

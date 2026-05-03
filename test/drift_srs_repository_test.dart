@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:language_tutor/data/database/app_database.dart';
 import 'package:language_tutor/features/srs/drift_srs_repository.dart';
 import 'package:language_tutor/features/srs/review_grade.dart';
-import 'package:language_tutor/shared/jlpt_level.dart';
+import 'package:language_tutor/shared/proficiency_level.dart';
+import 'package:language_tutor/shared/target_language.dart';
 
 import 'test_helpers.dart';
 
@@ -26,7 +27,8 @@ void main() {
     () async {
       final card = await repository.insertGeneratedCard(
         lesson: lessonFixture(),
-        targetLevel: JlptLevel.n5,
+        targetLanguage: TargetLanguage.japanese,
+        targetLevel: ProficiencyLevel.beginner,
         now: now,
         source: 'test',
       );
@@ -36,7 +38,7 @@ void main() {
       final vocab = await repository.getVocabularyForCard(card!.id);
 
       expect(dueCards.single.id, card.id);
-      expect(vocab.single.japanese, 'ノート');
+      expect(vocab.single.targetText, 'ノート');
     },
   );
 
@@ -45,13 +47,15 @@ void main() {
     () async {
       final first = await repository.insertGeneratedCard(
         lesson: lessonFixture(),
-        targetLevel: JlptLevel.n5,
+        targetLanguage: TargetLanguage.japanese,
+        targetLevel: ProficiencyLevel.beginner,
         now: now,
         source: 'test',
       );
       final duplicate = await repository.insertGeneratedCard(
         lesson: lessonFixture(),
-        targetLevel: JlptLevel.n5,
+        targetLanguage: TargetLanguage.japanese,
+        targetLevel: ProficiencyLevel.beginner,
         now: now.add(const Duration(minutes: 5)),
         source: 'test',
       );
@@ -64,7 +68,8 @@ void main() {
   test('review transaction updates card schedule and logs event', () async {
     final card = await repository.insertGeneratedCard(
       lesson: lessonFixture(),
-      targetLevel: JlptLevel.n5,
+      targetLanguage: TargetLanguage.japanese,
+      targetLevel: ProficiencyLevel.beginner,
       now: now,
       source: 'test',
     );

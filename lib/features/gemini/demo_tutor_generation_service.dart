@@ -1,5 +1,6 @@
 import '../../data/models/tutor_result.dart';
-import '../../shared/jlpt_level.dart';
+import '../../shared/proficiency_level.dart';
+import '../../shared/target_language.dart';
 import '../capture/camera_frame.dart';
 import 'tutor_generation_service.dart';
 
@@ -9,35 +10,39 @@ class DemoTutorGenerationService implements TutorGenerationService {
   @override
   Future<TutorResult> generateFromFrame({
     required CameraFrame frame,
-    required JlptLevel level,
+    required TargetLanguage language,
+    required ProficiencyLevel level,
   }) async {
     return TutorResult(
       sceneLabel: 'desk object',
       english: 'There is a notebook here.',
-      japanese: switch (level) {
-        JlptLevel.n5 => 'ここにノートがあります。',
-        JlptLevel.n4 => '机の上にノートが置いてあります。',
-        JlptLevel.n3 => '机の上にノートが開いたままになっています。',
-        JlptLevel.n2 => '机の上には、使いかけのノートが置かれています。',
-        JlptLevel.n1 => '机上には、書きかけと思われるノートが広げられています。',
-      },
-      reading: switch (level) {
-        JlptLevel.n5 => 'ここにノートがあります。',
-        JlptLevel.n4 => 'つくえのうえにノートがおいてあります。',
-        JlptLevel.n3 => 'つくえのうえにノートがひらいたままになっています。',
-        JlptLevel.n2 => 'つくえのうえには、つかいかけのノートがおかれています。',
-        JlptLevel.n1 => 'きじょうには、かきかけとおもわれるノートがひろげられています。',
-      },
-      keyVocabulary: const [
+      targetText: language.demoSentence,
+      pronunciation: language.demoPronunciation,
+      keyVocabulary: [
         VocabItem(
-          japanese: 'ノート',
-          reading: 'ノート',
-          meaning: 'notebook',
-          approxJlpt: 'N5',
+          targetText: language.demoVocabulary,
+          pronunciation: language.demoVocabularyPronunciation,
+          meaning: language.demoMeaning,
+          approxLevel: level.label,
         ),
       ],
-      grammarNote: 'あります marks the existence of an inanimate object.',
+      grammarNote: _grammarNoteFor(level),
       confidence: 0.95,
     );
+  }
+
+  String _grammarNoteFor(ProficiencyLevel level) {
+    return switch (level) {
+      ProficiencyLevel.beginner =>
+        'Simple location sentence with everyday vocabulary.',
+      ProficiencyLevel.elementary =>
+        'Adds a small amount of structure beyond a basic label.',
+      ProficiencyLevel.intermediate =>
+        'Uses natural phrasing suitable for everyday conversation.',
+      ProficiencyLevel.upperIntermediate =>
+        'Uses fuller phrasing while staying tied to the visible object.',
+      ProficiencyLevel.advanced =>
+        'Uses more polished phrasing without leaving the image context.',
+    };
   }
 }

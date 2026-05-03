@@ -40,23 +40,23 @@ class $LearningCardsTable extends LearningCards
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _japaneseMeta = const VerificationMeta(
-    'japanese',
+  static const VerificationMeta _targetTextMeta = const VerificationMeta(
+    'targetText',
   );
   @override
-  late final GeneratedColumn<String> japanese = GeneratedColumn<String>(
-    'japanese',
+  late final GeneratedColumn<String> targetText = GeneratedColumn<String>(
+    'target_text',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _readingMeta = const VerificationMeta(
-    'reading',
+  static const VerificationMeta _pronunciationMeta = const VerificationMeta(
+    'pronunciation',
   );
   @override
-  late final GeneratedColumn<String> reading = GeneratedColumn<String>(
-    'reading',
+  late final GeneratedColumn<String> pronunciation = GeneratedColumn<String>(
+    'pronunciation',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -68,6 +68,17 @@ class $LearningCardsTable extends LearningCards
   @override
   late final GeneratedColumn<String> grammarNote = GeneratedColumn<String>(
     'grammar_note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetLanguageMeta = const VerificationMeta(
+    'targetLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> targetLanguage = GeneratedColumn<String>(
+    'target_language',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -173,9 +184,10 @@ class $LearningCardsTable extends LearningCards
     id,
     sceneLabel,
     english,
-    japanese,
-    reading,
+    targetText,
+    pronunciation,
     grammarNote,
+    targetLanguage,
     targetLevel,
     source,
     createdAt,
@@ -219,21 +231,24 @@ class $LearningCardsTable extends LearningCards
     } else if (isInserting) {
       context.missing(_englishMeta);
     }
-    if (data.containsKey('japanese')) {
+    if (data.containsKey('target_text')) {
       context.handle(
-        _japaneseMeta,
-        japanese.isAcceptableOrUnknown(data['japanese']!, _japaneseMeta),
+        _targetTextMeta,
+        targetText.isAcceptableOrUnknown(data['target_text']!, _targetTextMeta),
       );
     } else if (isInserting) {
-      context.missing(_japaneseMeta);
+      context.missing(_targetTextMeta);
     }
-    if (data.containsKey('reading')) {
+    if (data.containsKey('pronunciation')) {
       context.handle(
-        _readingMeta,
-        reading.isAcceptableOrUnknown(data['reading']!, _readingMeta),
+        _pronunciationMeta,
+        pronunciation.isAcceptableOrUnknown(
+          data['pronunciation']!,
+          _pronunciationMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_readingMeta);
+      context.missing(_pronunciationMeta);
     }
     if (data.containsKey('grammar_note')) {
       context.handle(
@@ -245,6 +260,17 @@ class $LearningCardsTable extends LearningCards
       );
     } else if (isInserting) {
       context.missing(_grammarNoteMeta);
+    }
+    if (data.containsKey('target_language')) {
+      context.handle(
+        _targetLanguageMeta,
+        targetLanguage.isAcceptableOrUnknown(
+          data['target_language']!,
+          _targetLanguageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetLanguageMeta);
     }
     if (data.containsKey('target_level')) {
       context.handle(
@@ -346,17 +372,21 @@ class $LearningCardsTable extends LearningCards
         DriftSqlType.string,
         data['${effectivePrefix}english'],
       )!,
-      japanese: attachedDatabase.typeMapping.read(
+      targetText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}japanese'],
+        data['${effectivePrefix}target_text'],
       )!,
-      reading: attachedDatabase.typeMapping.read(
+      pronunciation: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}reading'],
+        data['${effectivePrefix}pronunciation'],
       )!,
       grammarNote: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}grammar_note'],
+      )!,
+      targetLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_language'],
       )!,
       targetLevel: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -407,9 +437,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
   final String id;
   final String sceneLabel;
   final String english;
-  final String japanese;
-  final String reading;
+  final String targetText;
+  final String pronunciation;
   final String grammarNote;
+  final String targetLanguage;
   final String targetLevel;
   final String source;
   final int createdAt;
@@ -423,9 +454,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
     required this.id,
     required this.sceneLabel,
     required this.english,
-    required this.japanese,
-    required this.reading,
+    required this.targetText,
+    required this.pronunciation,
     required this.grammarNote,
+    required this.targetLanguage,
     required this.targetLevel,
     required this.source,
     required this.createdAt,
@@ -442,9 +474,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
     map['id'] = Variable<String>(id);
     map['scene_label'] = Variable<String>(sceneLabel);
     map['english'] = Variable<String>(english);
-    map['japanese'] = Variable<String>(japanese);
-    map['reading'] = Variable<String>(reading);
+    map['target_text'] = Variable<String>(targetText);
+    map['pronunciation'] = Variable<String>(pronunciation);
     map['grammar_note'] = Variable<String>(grammarNote);
+    map['target_language'] = Variable<String>(targetLanguage);
     map['target_level'] = Variable<String>(targetLevel);
     map['source'] = Variable<String>(source);
     map['created_at'] = Variable<int>(createdAt);
@@ -462,9 +495,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
       id: Value(id),
       sceneLabel: Value(sceneLabel),
       english: Value(english),
-      japanese: Value(japanese),
-      reading: Value(reading),
+      targetText: Value(targetText),
+      pronunciation: Value(pronunciation),
       grammarNote: Value(grammarNote),
+      targetLanguage: Value(targetLanguage),
       targetLevel: Value(targetLevel),
       source: Value(source),
       createdAt: Value(createdAt),
@@ -486,9 +520,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
       id: serializer.fromJson<String>(json['id']),
       sceneLabel: serializer.fromJson<String>(json['sceneLabel']),
       english: serializer.fromJson<String>(json['english']),
-      japanese: serializer.fromJson<String>(json['japanese']),
-      reading: serializer.fromJson<String>(json['reading']),
+      targetText: serializer.fromJson<String>(json['targetText']),
+      pronunciation: serializer.fromJson<String>(json['pronunciation']),
       grammarNote: serializer.fromJson<String>(json['grammarNote']),
+      targetLanguage: serializer.fromJson<String>(json['targetLanguage']),
       targetLevel: serializer.fromJson<String>(json['targetLevel']),
       source: serializer.fromJson<String>(json['source']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
@@ -507,9 +542,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
       'id': serializer.toJson<String>(id),
       'sceneLabel': serializer.toJson<String>(sceneLabel),
       'english': serializer.toJson<String>(english),
-      'japanese': serializer.toJson<String>(japanese),
-      'reading': serializer.toJson<String>(reading),
+      'targetText': serializer.toJson<String>(targetText),
+      'pronunciation': serializer.toJson<String>(pronunciation),
       'grammarNote': serializer.toJson<String>(grammarNote),
+      'targetLanguage': serializer.toJson<String>(targetLanguage),
       'targetLevel': serializer.toJson<String>(targetLevel),
       'source': serializer.toJson<String>(source),
       'createdAt': serializer.toJson<int>(createdAt),
@@ -526,9 +562,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
     String? id,
     String? sceneLabel,
     String? english,
-    String? japanese,
-    String? reading,
+    String? targetText,
+    String? pronunciation,
     String? grammarNote,
+    String? targetLanguage,
     String? targetLevel,
     String? source,
     int? createdAt,
@@ -542,9 +579,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
     id: id ?? this.id,
     sceneLabel: sceneLabel ?? this.sceneLabel,
     english: english ?? this.english,
-    japanese: japanese ?? this.japanese,
-    reading: reading ?? this.reading,
+    targetText: targetText ?? this.targetText,
+    pronunciation: pronunciation ?? this.pronunciation,
     grammarNote: grammarNote ?? this.grammarNote,
+    targetLanguage: targetLanguage ?? this.targetLanguage,
     targetLevel: targetLevel ?? this.targetLevel,
     source: source ?? this.source,
     createdAt: createdAt ?? this.createdAt,
@@ -562,11 +600,18 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
           ? data.sceneLabel.value
           : this.sceneLabel,
       english: data.english.present ? data.english.value : this.english,
-      japanese: data.japanese.present ? data.japanese.value : this.japanese,
-      reading: data.reading.present ? data.reading.value : this.reading,
+      targetText: data.targetText.present
+          ? data.targetText.value
+          : this.targetText,
+      pronunciation: data.pronunciation.present
+          ? data.pronunciation.value
+          : this.pronunciation,
       grammarNote: data.grammarNote.present
           ? data.grammarNote.value
           : this.grammarNote,
+      targetLanguage: data.targetLanguage.present
+          ? data.targetLanguage.value
+          : this.targetLanguage,
       targetLevel: data.targetLevel.present
           ? data.targetLevel.value
           : this.targetLevel,
@@ -591,9 +636,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
           ..write('id: $id, ')
           ..write('sceneLabel: $sceneLabel, ')
           ..write('english: $english, ')
-          ..write('japanese: $japanese, ')
-          ..write('reading: $reading, ')
+          ..write('targetText: $targetText, ')
+          ..write('pronunciation: $pronunciation, ')
           ..write('grammarNote: $grammarNote, ')
+          ..write('targetLanguage: $targetLanguage, ')
           ..write('targetLevel: $targetLevel, ')
           ..write('source: $source, ')
           ..write('createdAt: $createdAt, ')
@@ -612,9 +658,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
     id,
     sceneLabel,
     english,
-    japanese,
-    reading,
+    targetText,
+    pronunciation,
     grammarNote,
+    targetLanguage,
     targetLevel,
     source,
     createdAt,
@@ -632,9 +679,10 @@ class LearningCard extends DataClass implements Insertable<LearningCard> {
           other.id == this.id &&
           other.sceneLabel == this.sceneLabel &&
           other.english == this.english &&
-          other.japanese == this.japanese &&
-          other.reading == this.reading &&
+          other.targetText == this.targetText &&
+          other.pronunciation == this.pronunciation &&
           other.grammarNote == this.grammarNote &&
+          other.targetLanguage == this.targetLanguage &&
           other.targetLevel == this.targetLevel &&
           other.source == this.source &&
           other.createdAt == this.createdAt &&
@@ -650,9 +698,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
   final Value<String> id;
   final Value<String> sceneLabel;
   final Value<String> english;
-  final Value<String> japanese;
-  final Value<String> reading;
+  final Value<String> targetText;
+  final Value<String> pronunciation;
   final Value<String> grammarNote;
+  final Value<String> targetLanguage;
   final Value<String> targetLevel;
   final Value<String> source;
   final Value<int> createdAt;
@@ -667,9 +716,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
     this.id = const Value.absent(),
     this.sceneLabel = const Value.absent(),
     this.english = const Value.absent(),
-    this.japanese = const Value.absent(),
-    this.reading = const Value.absent(),
+    this.targetText = const Value.absent(),
+    this.pronunciation = const Value.absent(),
     this.grammarNote = const Value.absent(),
+    this.targetLanguage = const Value.absent(),
     this.targetLevel = const Value.absent(),
     this.source = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -685,9 +735,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
     required String id,
     required String sceneLabel,
     required String english,
-    required String japanese,
-    required String reading,
+    required String targetText,
+    required String pronunciation,
     required String grammarNote,
+    required String targetLanguage,
     required String targetLevel,
     required String source,
     required int createdAt,
@@ -701,9 +752,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
   }) : id = Value(id),
        sceneLabel = Value(sceneLabel),
        english = Value(english),
-       japanese = Value(japanese),
-       reading = Value(reading),
+       targetText = Value(targetText),
+       pronunciation = Value(pronunciation),
        grammarNote = Value(grammarNote),
+       targetLanguage = Value(targetLanguage),
        targetLevel = Value(targetLevel),
        source = Value(source),
        createdAt = Value(createdAt),
@@ -716,9 +768,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
     Expression<String>? id,
     Expression<String>? sceneLabel,
     Expression<String>? english,
-    Expression<String>? japanese,
-    Expression<String>? reading,
+    Expression<String>? targetText,
+    Expression<String>? pronunciation,
     Expression<String>? grammarNote,
+    Expression<String>? targetLanguage,
     Expression<String>? targetLevel,
     Expression<String>? source,
     Expression<int>? createdAt,
@@ -734,9 +787,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
       if (id != null) 'id': id,
       if (sceneLabel != null) 'scene_label': sceneLabel,
       if (english != null) 'english': english,
-      if (japanese != null) 'japanese': japanese,
-      if (reading != null) 'reading': reading,
+      if (targetText != null) 'target_text': targetText,
+      if (pronunciation != null) 'pronunciation': pronunciation,
       if (grammarNote != null) 'grammar_note': grammarNote,
+      if (targetLanguage != null) 'target_language': targetLanguage,
       if (targetLevel != null) 'target_level': targetLevel,
       if (source != null) 'source': source,
       if (createdAt != null) 'created_at': createdAt,
@@ -754,9 +808,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
     Value<String>? id,
     Value<String>? sceneLabel,
     Value<String>? english,
-    Value<String>? japanese,
-    Value<String>? reading,
+    Value<String>? targetText,
+    Value<String>? pronunciation,
     Value<String>? grammarNote,
+    Value<String>? targetLanguage,
     Value<String>? targetLevel,
     Value<String>? source,
     Value<int>? createdAt,
@@ -772,9 +827,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
       id: id ?? this.id,
       sceneLabel: sceneLabel ?? this.sceneLabel,
       english: english ?? this.english,
-      japanese: japanese ?? this.japanese,
-      reading: reading ?? this.reading,
+      targetText: targetText ?? this.targetText,
+      pronunciation: pronunciation ?? this.pronunciation,
       grammarNote: grammarNote ?? this.grammarNote,
+      targetLanguage: targetLanguage ?? this.targetLanguage,
       targetLevel: targetLevel ?? this.targetLevel,
       source: source ?? this.source,
       createdAt: createdAt ?? this.createdAt,
@@ -800,14 +856,17 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
     if (english.present) {
       map['english'] = Variable<String>(english.value);
     }
-    if (japanese.present) {
-      map['japanese'] = Variable<String>(japanese.value);
+    if (targetText.present) {
+      map['target_text'] = Variable<String>(targetText.value);
     }
-    if (reading.present) {
-      map['reading'] = Variable<String>(reading.value);
+    if (pronunciation.present) {
+      map['pronunciation'] = Variable<String>(pronunciation.value);
     }
     if (grammarNote.present) {
       map['grammar_note'] = Variable<String>(grammarNote.value);
+    }
+    if (targetLanguage.present) {
+      map['target_language'] = Variable<String>(targetLanguage.value);
     }
     if (targetLevel.present) {
       map['target_level'] = Variable<String>(targetLevel.value);
@@ -848,9 +907,10 @@ class LearningCardsCompanion extends UpdateCompanion<LearningCard> {
           ..write('id: $id, ')
           ..write('sceneLabel: $sceneLabel, ')
           ..write('english: $english, ')
-          ..write('japanese: $japanese, ')
-          ..write('reading: $reading, ')
+          ..write('targetText: $targetText, ')
+          ..write('pronunciation: $pronunciation, ')
           ..write('grammarNote: $grammarNote, ')
+          ..write('targetLanguage: $targetLanguage, ')
           ..write('targetLevel: $targetLevel, ')
           ..write('source: $source, ')
           ..write('createdAt: $createdAt, ')
@@ -893,23 +953,23 @@ class $VocabItemsTable extends VocabItems
       'REFERENCES learning_cards (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _japaneseMeta = const VerificationMeta(
-    'japanese',
+  static const VerificationMeta _targetTextMeta = const VerificationMeta(
+    'targetText',
   );
   @override
-  late final GeneratedColumn<String> japanese = GeneratedColumn<String>(
-    'japanese',
+  late final GeneratedColumn<String> targetText = GeneratedColumn<String>(
+    'target_text',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _readingMeta = const VerificationMeta(
-    'reading',
+  static const VerificationMeta _pronunciationMeta = const VerificationMeta(
+    'pronunciation',
   );
   @override
-  late final GeneratedColumn<String> reading = GeneratedColumn<String>(
-    'reading',
+  late final GeneratedColumn<String> pronunciation = GeneratedColumn<String>(
+    'pronunciation',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -926,12 +986,12 @@ class $VocabItemsTable extends VocabItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _approxJlptMeta = const VerificationMeta(
-    'approxJlpt',
+  static const VerificationMeta _approxLevelMeta = const VerificationMeta(
+    'approxLevel',
   );
   @override
-  late final GeneratedColumn<String> approxJlpt = GeneratedColumn<String>(
-    'approx_jlpt',
+  late final GeneratedColumn<String> approxLevel = GeneratedColumn<String>(
+    'approx_level',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -941,10 +1001,10 @@ class $VocabItemsTable extends VocabItems
   List<GeneratedColumn> get $columns => [
     id,
     cardId,
-    japanese,
-    reading,
+    targetText,
+    pronunciation,
     meaning,
-    approxJlpt,
+    approxLevel,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -971,21 +1031,24 @@ class $VocabItemsTable extends VocabItems
     } else if (isInserting) {
       context.missing(_cardIdMeta);
     }
-    if (data.containsKey('japanese')) {
+    if (data.containsKey('target_text')) {
       context.handle(
-        _japaneseMeta,
-        japanese.isAcceptableOrUnknown(data['japanese']!, _japaneseMeta),
+        _targetTextMeta,
+        targetText.isAcceptableOrUnknown(data['target_text']!, _targetTextMeta),
       );
     } else if (isInserting) {
-      context.missing(_japaneseMeta);
+      context.missing(_targetTextMeta);
     }
-    if (data.containsKey('reading')) {
+    if (data.containsKey('pronunciation')) {
       context.handle(
-        _readingMeta,
-        reading.isAcceptableOrUnknown(data['reading']!, _readingMeta),
+        _pronunciationMeta,
+        pronunciation.isAcceptableOrUnknown(
+          data['pronunciation']!,
+          _pronunciationMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_readingMeta);
+      context.missing(_pronunciationMeta);
     }
     if (data.containsKey('meaning')) {
       context.handle(
@@ -995,13 +1058,16 @@ class $VocabItemsTable extends VocabItems
     } else if (isInserting) {
       context.missing(_meaningMeta);
     }
-    if (data.containsKey('approx_jlpt')) {
+    if (data.containsKey('approx_level')) {
       context.handle(
-        _approxJlptMeta,
-        approxJlpt.isAcceptableOrUnknown(data['approx_jlpt']!, _approxJlptMeta),
+        _approxLevelMeta,
+        approxLevel.isAcceptableOrUnknown(
+          data['approx_level']!,
+          _approxLevelMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_approxJlptMeta);
+      context.missing(_approxLevelMeta);
     }
     return context;
   }
@@ -1020,21 +1086,21 @@ class $VocabItemsTable extends VocabItems
         DriftSqlType.string,
         data['${effectivePrefix}card_id'],
       )!,
-      japanese: attachedDatabase.typeMapping.read(
+      targetText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}japanese'],
+        data['${effectivePrefix}target_text'],
       )!,
-      reading: attachedDatabase.typeMapping.read(
+      pronunciation: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}reading'],
+        data['${effectivePrefix}pronunciation'],
       )!,
       meaning: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}meaning'],
       )!,
-      approxJlpt: attachedDatabase.typeMapping.read(
+      approxLevel: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}approx_jlpt'],
+        data['${effectivePrefix}approx_level'],
       )!,
     );
   }
@@ -1048,27 +1114,27 @@ class $VocabItemsTable extends VocabItems
 class StoredVocabItem extends DataClass implements Insertable<StoredVocabItem> {
   final String id;
   final String cardId;
-  final String japanese;
-  final String reading;
+  final String targetText;
+  final String pronunciation;
   final String meaning;
-  final String approxJlpt;
+  final String approxLevel;
   const StoredVocabItem({
     required this.id,
     required this.cardId,
-    required this.japanese,
-    required this.reading,
+    required this.targetText,
+    required this.pronunciation,
     required this.meaning,
-    required this.approxJlpt,
+    required this.approxLevel,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['card_id'] = Variable<String>(cardId);
-    map['japanese'] = Variable<String>(japanese);
-    map['reading'] = Variable<String>(reading);
+    map['target_text'] = Variable<String>(targetText);
+    map['pronunciation'] = Variable<String>(pronunciation);
     map['meaning'] = Variable<String>(meaning);
-    map['approx_jlpt'] = Variable<String>(approxJlpt);
+    map['approx_level'] = Variable<String>(approxLevel);
     return map;
   }
 
@@ -1076,10 +1142,10 @@ class StoredVocabItem extends DataClass implements Insertable<StoredVocabItem> {
     return VocabItemsCompanion(
       id: Value(id),
       cardId: Value(cardId),
-      japanese: Value(japanese),
-      reading: Value(reading),
+      targetText: Value(targetText),
+      pronunciation: Value(pronunciation),
       meaning: Value(meaning),
-      approxJlpt: Value(approxJlpt),
+      approxLevel: Value(approxLevel),
     );
   }
 
@@ -1091,10 +1157,10 @@ class StoredVocabItem extends DataClass implements Insertable<StoredVocabItem> {
     return StoredVocabItem(
       id: serializer.fromJson<String>(json['id']),
       cardId: serializer.fromJson<String>(json['cardId']),
-      japanese: serializer.fromJson<String>(json['japanese']),
-      reading: serializer.fromJson<String>(json['reading']),
+      targetText: serializer.fromJson<String>(json['targetText']),
+      pronunciation: serializer.fromJson<String>(json['pronunciation']),
       meaning: serializer.fromJson<String>(json['meaning']),
-      approxJlpt: serializer.fromJson<String>(json['approxJlpt']),
+      approxLevel: serializer.fromJson<String>(json['approxLevel']),
     );
   }
   @override
@@ -1103,38 +1169,42 @@ class StoredVocabItem extends DataClass implements Insertable<StoredVocabItem> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'cardId': serializer.toJson<String>(cardId),
-      'japanese': serializer.toJson<String>(japanese),
-      'reading': serializer.toJson<String>(reading),
+      'targetText': serializer.toJson<String>(targetText),
+      'pronunciation': serializer.toJson<String>(pronunciation),
       'meaning': serializer.toJson<String>(meaning),
-      'approxJlpt': serializer.toJson<String>(approxJlpt),
+      'approxLevel': serializer.toJson<String>(approxLevel),
     };
   }
 
   StoredVocabItem copyWith({
     String? id,
     String? cardId,
-    String? japanese,
-    String? reading,
+    String? targetText,
+    String? pronunciation,
     String? meaning,
-    String? approxJlpt,
+    String? approxLevel,
   }) => StoredVocabItem(
     id: id ?? this.id,
     cardId: cardId ?? this.cardId,
-    japanese: japanese ?? this.japanese,
-    reading: reading ?? this.reading,
+    targetText: targetText ?? this.targetText,
+    pronunciation: pronunciation ?? this.pronunciation,
     meaning: meaning ?? this.meaning,
-    approxJlpt: approxJlpt ?? this.approxJlpt,
+    approxLevel: approxLevel ?? this.approxLevel,
   );
   StoredVocabItem copyWithCompanion(VocabItemsCompanion data) {
     return StoredVocabItem(
       id: data.id.present ? data.id.value : this.id,
       cardId: data.cardId.present ? data.cardId.value : this.cardId,
-      japanese: data.japanese.present ? data.japanese.value : this.japanese,
-      reading: data.reading.present ? data.reading.value : this.reading,
+      targetText: data.targetText.present
+          ? data.targetText.value
+          : this.targetText,
+      pronunciation: data.pronunciation.present
+          ? data.pronunciation.value
+          : this.pronunciation,
       meaning: data.meaning.present ? data.meaning.value : this.meaning,
-      approxJlpt: data.approxJlpt.present
-          ? data.approxJlpt.value
-          : this.approxJlpt,
+      approxLevel: data.approxLevel.present
+          ? data.approxLevel.value
+          : this.approxLevel,
     );
   }
 
@@ -1143,76 +1213,76 @@ class StoredVocabItem extends DataClass implements Insertable<StoredVocabItem> {
     return (StringBuffer('StoredVocabItem(')
           ..write('id: $id, ')
           ..write('cardId: $cardId, ')
-          ..write('japanese: $japanese, ')
-          ..write('reading: $reading, ')
+          ..write('targetText: $targetText, ')
+          ..write('pronunciation: $pronunciation, ')
           ..write('meaning: $meaning, ')
-          ..write('approxJlpt: $approxJlpt')
+          ..write('approxLevel: $approxLevel')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, cardId, japanese, reading, meaning, approxJlpt);
+      Object.hash(id, cardId, targetText, pronunciation, meaning, approxLevel);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is StoredVocabItem &&
           other.id == this.id &&
           other.cardId == this.cardId &&
-          other.japanese == this.japanese &&
-          other.reading == this.reading &&
+          other.targetText == this.targetText &&
+          other.pronunciation == this.pronunciation &&
           other.meaning == this.meaning &&
-          other.approxJlpt == this.approxJlpt);
+          other.approxLevel == this.approxLevel);
 }
 
 class VocabItemsCompanion extends UpdateCompanion<StoredVocabItem> {
   final Value<String> id;
   final Value<String> cardId;
-  final Value<String> japanese;
-  final Value<String> reading;
+  final Value<String> targetText;
+  final Value<String> pronunciation;
   final Value<String> meaning;
-  final Value<String> approxJlpt;
+  final Value<String> approxLevel;
   final Value<int> rowid;
   const VocabItemsCompanion({
     this.id = const Value.absent(),
     this.cardId = const Value.absent(),
-    this.japanese = const Value.absent(),
-    this.reading = const Value.absent(),
+    this.targetText = const Value.absent(),
+    this.pronunciation = const Value.absent(),
     this.meaning = const Value.absent(),
-    this.approxJlpt = const Value.absent(),
+    this.approxLevel = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   VocabItemsCompanion.insert({
     required String id,
     required String cardId,
-    required String japanese,
-    required String reading,
+    required String targetText,
+    required String pronunciation,
     required String meaning,
-    required String approxJlpt,
+    required String approxLevel,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        cardId = Value(cardId),
-       japanese = Value(japanese),
-       reading = Value(reading),
+       targetText = Value(targetText),
+       pronunciation = Value(pronunciation),
        meaning = Value(meaning),
-       approxJlpt = Value(approxJlpt);
+       approxLevel = Value(approxLevel);
   static Insertable<StoredVocabItem> custom({
     Expression<String>? id,
     Expression<String>? cardId,
-    Expression<String>? japanese,
-    Expression<String>? reading,
+    Expression<String>? targetText,
+    Expression<String>? pronunciation,
     Expression<String>? meaning,
-    Expression<String>? approxJlpt,
+    Expression<String>? approxLevel,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (cardId != null) 'card_id': cardId,
-      if (japanese != null) 'japanese': japanese,
-      if (reading != null) 'reading': reading,
+      if (targetText != null) 'target_text': targetText,
+      if (pronunciation != null) 'pronunciation': pronunciation,
       if (meaning != null) 'meaning': meaning,
-      if (approxJlpt != null) 'approx_jlpt': approxJlpt,
+      if (approxLevel != null) 'approx_level': approxLevel,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1220,19 +1290,19 @@ class VocabItemsCompanion extends UpdateCompanion<StoredVocabItem> {
   VocabItemsCompanion copyWith({
     Value<String>? id,
     Value<String>? cardId,
-    Value<String>? japanese,
-    Value<String>? reading,
+    Value<String>? targetText,
+    Value<String>? pronunciation,
     Value<String>? meaning,
-    Value<String>? approxJlpt,
+    Value<String>? approxLevel,
     Value<int>? rowid,
   }) {
     return VocabItemsCompanion(
       id: id ?? this.id,
       cardId: cardId ?? this.cardId,
-      japanese: japanese ?? this.japanese,
-      reading: reading ?? this.reading,
+      targetText: targetText ?? this.targetText,
+      pronunciation: pronunciation ?? this.pronunciation,
       meaning: meaning ?? this.meaning,
-      approxJlpt: approxJlpt ?? this.approxJlpt,
+      approxLevel: approxLevel ?? this.approxLevel,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1246,17 +1316,17 @@ class VocabItemsCompanion extends UpdateCompanion<StoredVocabItem> {
     if (cardId.present) {
       map['card_id'] = Variable<String>(cardId.value);
     }
-    if (japanese.present) {
-      map['japanese'] = Variable<String>(japanese.value);
+    if (targetText.present) {
+      map['target_text'] = Variable<String>(targetText.value);
     }
-    if (reading.present) {
-      map['reading'] = Variable<String>(reading.value);
+    if (pronunciation.present) {
+      map['pronunciation'] = Variable<String>(pronunciation.value);
     }
     if (meaning.present) {
       map['meaning'] = Variable<String>(meaning.value);
     }
-    if (approxJlpt.present) {
-      map['approx_jlpt'] = Variable<String>(approxJlpt.value);
+    if (approxLevel.present) {
+      map['approx_level'] = Variable<String>(approxLevel.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1269,10 +1339,10 @@ class VocabItemsCompanion extends UpdateCompanion<StoredVocabItem> {
     return (StringBuffer('VocabItemsCompanion(')
           ..write('id: $id, ')
           ..write('cardId: $cardId, ')
-          ..write('japanese: $japanese, ')
-          ..write('reading: $reading, ')
+          ..write('targetText: $targetText, ')
+          ..write('pronunciation: $pronunciation, ')
           ..write('meaning: $meaning, ')
-          ..write('approxJlpt: $approxJlpt, ')
+          ..write('approxLevel: $approxLevel, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2616,9 +2686,10 @@ typedef $$LearningCardsTableCreateCompanionBuilder =
       required String id,
       required String sceneLabel,
       required String english,
-      required String japanese,
-      required String reading,
+      required String targetText,
+      required String pronunciation,
       required String grammarNote,
+      required String targetLanguage,
       required String targetLevel,
       required String source,
       required int createdAt,
@@ -2635,9 +2706,10 @@ typedef $$LearningCardsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> sceneLabel,
       Value<String> english,
-      Value<String> japanese,
-      Value<String> reading,
+      Value<String> targetText,
+      Value<String> pronunciation,
       Value<String> grammarNote,
+      Value<String> targetLanguage,
       Value<String> targetLevel,
       Value<String> source,
       Value<int> createdAt,
@@ -2722,18 +2794,23 @@ class $$LearningCardsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get japanese => $composableBuilder(
-    column: $table.japanese,
+  ColumnFilters<String> get targetText => $composableBuilder(
+    column: $table.targetText,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get reading => $composableBuilder(
-    column: $table.reading,
+  ColumnFilters<String> get pronunciation => $composableBuilder(
+    column: $table.pronunciation,
     builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<String> get grammarNote => $composableBuilder(
     column: $table.grammarNote,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2857,18 +2934,23 @@ class $$LearningCardsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get japanese => $composableBuilder(
-    column: $table.japanese,
+  ColumnOrderings<String> get targetText => $composableBuilder(
+    column: $table.targetText,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get reading => $composableBuilder(
-    column: $table.reading,
+  ColumnOrderings<String> get pronunciation => $composableBuilder(
+    column: $table.pronunciation,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<String> get grammarNote => $composableBuilder(
     column: $table.grammarNote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2938,14 +3020,23 @@ class $$LearningCardsTableAnnotationComposer
   GeneratedColumn<String> get english =>
       $composableBuilder(column: $table.english, builder: (column) => column);
 
-  GeneratedColumn<String> get japanese =>
-      $composableBuilder(column: $table.japanese, builder: (column) => column);
+  GeneratedColumn<String> get targetText => $composableBuilder(
+    column: $table.targetText,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<String> get reading =>
-      $composableBuilder(column: $table.reading, builder: (column) => column);
+  GeneratedColumn<String> get pronunciation => $composableBuilder(
+    column: $table.pronunciation,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get grammarNote => $composableBuilder(
     column: $table.grammarNote,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
     builder: (column) => column,
   );
 
@@ -3064,9 +3155,10 @@ class $$LearningCardsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> sceneLabel = const Value.absent(),
                 Value<String> english = const Value.absent(),
-                Value<String> japanese = const Value.absent(),
-                Value<String> reading = const Value.absent(),
+                Value<String> targetText = const Value.absent(),
+                Value<String> pronunciation = const Value.absent(),
                 Value<String> grammarNote = const Value.absent(),
+                Value<String> targetLanguage = const Value.absent(),
                 Value<String> targetLevel = const Value.absent(),
                 Value<String> source = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
@@ -3081,9 +3173,10 @@ class $$LearningCardsTableTableManager
                 id: id,
                 sceneLabel: sceneLabel,
                 english: english,
-                japanese: japanese,
-                reading: reading,
+                targetText: targetText,
+                pronunciation: pronunciation,
                 grammarNote: grammarNote,
+                targetLanguage: targetLanguage,
                 targetLevel: targetLevel,
                 source: source,
                 createdAt: createdAt,
@@ -3100,9 +3193,10 @@ class $$LearningCardsTableTableManager
                 required String id,
                 required String sceneLabel,
                 required String english,
-                required String japanese,
-                required String reading,
+                required String targetText,
+                required String pronunciation,
                 required String grammarNote,
+                required String targetLanguage,
                 required String targetLevel,
                 required String source,
                 required int createdAt,
@@ -3117,9 +3211,10 @@ class $$LearningCardsTableTableManager
                 id: id,
                 sceneLabel: sceneLabel,
                 english: english,
-                japanese: japanese,
-                reading: reading,
+                targetText: targetText,
+                pronunciation: pronunciation,
                 grammarNote: grammarNote,
+                targetLanguage: targetLanguage,
                 targetLevel: targetLevel,
                 source: source,
                 createdAt: createdAt,
@@ -3218,20 +3313,20 @@ typedef $$VocabItemsTableCreateCompanionBuilder =
     VocabItemsCompanion Function({
       required String id,
       required String cardId,
-      required String japanese,
-      required String reading,
+      required String targetText,
+      required String pronunciation,
       required String meaning,
-      required String approxJlpt,
+      required String approxLevel,
       Value<int> rowid,
     });
 typedef $$VocabItemsTableUpdateCompanionBuilder =
     VocabItemsCompanion Function({
       Value<String> id,
       Value<String> cardId,
-      Value<String> japanese,
-      Value<String> reading,
+      Value<String> targetText,
+      Value<String> pronunciation,
       Value<String> meaning,
-      Value<String> approxJlpt,
+      Value<String> approxLevel,
       Value<int> rowid,
     });
 
@@ -3273,13 +3368,13 @@ class $$VocabItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get japanese => $composableBuilder(
-    column: $table.japanese,
+  ColumnFilters<String> get targetText => $composableBuilder(
+    column: $table.targetText,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get reading => $composableBuilder(
-    column: $table.reading,
+  ColumnFilters<String> get pronunciation => $composableBuilder(
+    column: $table.pronunciation,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3288,8 +3383,8 @@ class $$VocabItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get approxJlpt => $composableBuilder(
-    column: $table.approxJlpt,
+  ColumnFilters<String> get approxLevel => $composableBuilder(
+    column: $table.approxLevel,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3331,13 +3426,13 @@ class $$VocabItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get japanese => $composableBuilder(
-    column: $table.japanese,
+  ColumnOrderings<String> get targetText => $composableBuilder(
+    column: $table.targetText,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get reading => $composableBuilder(
-    column: $table.reading,
+  ColumnOrderings<String> get pronunciation => $composableBuilder(
+    column: $table.pronunciation,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3346,8 +3441,8 @@ class $$VocabItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get approxJlpt => $composableBuilder(
-    column: $table.approxJlpt,
+  ColumnOrderings<String> get approxLevel => $composableBuilder(
+    column: $table.approxLevel,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3387,17 +3482,21 @@ class $$VocabItemsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get japanese =>
-      $composableBuilder(column: $table.japanese, builder: (column) => column);
+  GeneratedColumn<String> get targetText => $composableBuilder(
+    column: $table.targetText,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<String> get reading =>
-      $composableBuilder(column: $table.reading, builder: (column) => column);
+  GeneratedColumn<String> get pronunciation => $composableBuilder(
+    column: $table.pronunciation,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get meaning =>
       $composableBuilder(column: $table.meaning, builder: (column) => column);
 
-  GeneratedColumn<String> get approxJlpt => $composableBuilder(
-    column: $table.approxJlpt,
+  GeneratedColumn<String> get approxLevel => $composableBuilder(
+    column: $table.approxLevel,
     builder: (column) => column,
   );
 
@@ -3455,36 +3554,36 @@ class $$VocabItemsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> cardId = const Value.absent(),
-                Value<String> japanese = const Value.absent(),
-                Value<String> reading = const Value.absent(),
+                Value<String> targetText = const Value.absent(),
+                Value<String> pronunciation = const Value.absent(),
                 Value<String> meaning = const Value.absent(),
-                Value<String> approxJlpt = const Value.absent(),
+                Value<String> approxLevel = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => VocabItemsCompanion(
                 id: id,
                 cardId: cardId,
-                japanese: japanese,
-                reading: reading,
+                targetText: targetText,
+                pronunciation: pronunciation,
                 meaning: meaning,
-                approxJlpt: approxJlpt,
+                approxLevel: approxLevel,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
                 required String cardId,
-                required String japanese,
-                required String reading,
+                required String targetText,
+                required String pronunciation,
                 required String meaning,
-                required String approxJlpt,
+                required String approxLevel,
                 Value<int> rowid = const Value.absent(),
               }) => VocabItemsCompanion.insert(
                 id: id,
                 cardId: cardId,
-                japanese: japanese,
-                reading: reading,
+                targetText: targetText,
+                pronunciation: pronunciation,
                 meaning: meaning,
-                approxJlpt: approxJlpt,
+                approxLevel: approxLevel,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

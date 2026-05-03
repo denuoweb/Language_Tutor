@@ -4,8 +4,7 @@ import 'camera_frame.dart';
 
 enum CaptureSource {
   phoneCamera,
-  rayBan,
-  ;
+  rayBan;
 
   String get label {
     switch (this) {

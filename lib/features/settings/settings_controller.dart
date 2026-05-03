@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app_providers.dart';
-import '../../shared/jlpt_level.dart';
+import '../../shared/proficiency_level.dart';
+import '../../shared/target_language.dart';
 import 'app_settings.dart';
 
 class SettingsController extends AsyncNotifier<AppSettings> {
@@ -10,7 +11,11 @@ class SettingsController extends AsyncNotifier<AppSettings> {
     return ref.watch(settingsRepositoryProvider).load();
   }
 
-  Future<void> setLevel(JlptLevel level) async {
+  Future<void> setLanguage(TargetLanguage language) async {
+    await _update((settings) => settings.copyWith(language: language));
+  }
+
+  Future<void> setLevel(ProficiencyLevel level) async {
     await _update((settings) => settings.copyWith(level: level));
   }
 

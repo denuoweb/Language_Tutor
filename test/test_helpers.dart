@@ -16,20 +16,21 @@ import 'package:language_tutor/features/settings/settings_repository.dart';
 import 'package:language_tutor/features/speech/speech_service.dart';
 import 'package:language_tutor/features/srs/review_grade.dart';
 import 'package:language_tutor/features/srs/srs_repository.dart';
-import 'package:language_tutor/shared/jlpt_level.dart';
+import 'package:language_tutor/shared/proficiency_level.dart';
+import 'package:language_tutor/shared/target_language.dart';
 
 TutorResult lessonFixture({double confidence = 0.95}) {
   return TutorResult(
     sceneLabel: 'desk',
     english: 'There is a notebook.',
-    japanese: 'ここにノートがあります。',
-    reading: 'ここにノートがあります。',
+    targetText: 'ここにノートがあります。',
+    pronunciation: 'ここにノートがあります。',
     keyVocabulary: const [
       VocabItem(
-        japanese: 'ノート',
-        reading: 'ノート',
+        targetText: 'ノート',
+        pronunciation: 'ノート',
         meaning: 'notebook',
-        approxJlpt: 'N5',
+        approxLevel: 'Beginner',
       ),
     ],
     grammarNote: 'あります marks existence.',
@@ -52,10 +53,11 @@ LearningCard learningCardFixture({String id = 'card-1'}) {
     id: id,
     sceneLabel: 'desk',
     english: 'There is a notebook.',
-    japanese: 'ここにノートがあります。',
-    reading: 'ここにノートがあります。',
+    targetText: 'ここにノートがあります。',
+    pronunciation: 'ここにノートがあります。',
     grammarNote: 'あります marks existence.',
-    targetLevel: 'N5',
+    targetLanguage: TargetLanguage.japanese.code,
+    targetLevel: ProficiencyLevel.beginner.label,
     source: 'test',
     createdAt: now,
     dueAt: now,
@@ -71,10 +73,10 @@ StoredVocabItem storedVocabFixture({String cardId = 'card-1'}) {
   return StoredVocabItem(
     id: 'vocab-1',
     cardId: cardId,
-    japanese: 'ノート',
-    reading: 'ノート',
+    targetText: 'ノート',
+    pronunciation: 'ノート',
     meaning: 'notebook',
-    approxJlpt: 'N5',
+    approxLevel: ProficiencyLevel.beginner.label,
   );
 }
 
@@ -120,7 +122,8 @@ class FakeTutorGenerationService implements TutorGenerationService {
   @override
   Future<TutorResult> generateFromFrame({
     required CameraFrame frame,
-    required JlptLevel level,
+    required TargetLanguage language,
+    required ProficiencyLevel level,
   }) async {
     callCount++;
     return result;
@@ -134,7 +137,8 @@ class DelayedTutorGenerationService implements TutorGenerationService {
   @override
   Future<TutorResult> generateFromFrame({
     required CameraFrame frame,
-    required JlptLevel level,
+    required TargetLanguage language,
+    required ProficiencyLevel level,
   }) {
     if (!called.isCompleted) {
       called.complete();
@@ -144,11 +148,14 @@ class DelayedTutorGenerationService implements TutorGenerationService {
 }
 
 class FakeSpeechService implements SpeechService {
-  final spoken = <String>[];
+  final spoken = <({String text, TargetLanguage language})>[];
 
   @override
-  Future<void> speakJapanese(String text) async {
-    spoken.add(text);
+  Future<void> speakText(
+    String text, {
+    required TargetLanguage language,
+  }) async {
+    spoken.add((text: text, language: language));
   }
 
   @override
@@ -184,7 +191,8 @@ class FakeSrsRepository implements SrsRepository {
   @override
   Future<LearningCard?> insertGeneratedCard({
     required TutorResult lesson,
-    required JlptLevel targetLevel,
+    required TargetLanguage targetLanguage,
+    required ProficiencyLevel targetLevel,
     required DateTime now,
     required String source,
   }) async {

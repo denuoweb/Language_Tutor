@@ -16,8 +16,7 @@ class RayBanAvailability {
       isSupported: map['isSupported'] as bool? ?? false,
       isConnected: map['isConnected'] as bool? ?? false,
       message:
-          map['message'] as String? ??
-          'Ray-Ban bridge status is unavailable.',
+          map['message'] as String? ?? 'Ray-Ban bridge status is unavailable.',
     );
   }
 

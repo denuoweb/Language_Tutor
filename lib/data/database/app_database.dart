@@ -5,6 +5,9 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../shared/proficiency_level.dart';
+import '../../shared/target_language.dart';
+
 part 'app_database.g.dart';
 
 @TableIndex(name: 'learning_cards_due_at_idx', columns: {#dueAt})
@@ -12,9 +15,10 @@ class LearningCards extends Table {
   TextColumn get id => text()();
   TextColumn get sceneLabel => text()();
   TextColumn get english => text()();
-  TextColumn get japanese => text()();
-  TextColumn get reading => text()();
+  TextColumn get targetText => text()();
+  TextColumn get pronunciation => text()();
   TextColumn get grammarNote => text()();
+  TextColumn get targetLanguage => text()();
   TextColumn get targetLevel => text()();
   TextColumn get source => text()();
   IntColumn get createdAt => integer()();
@@ -35,10 +39,10 @@ class VocabItems extends Table {
   TextColumn get id => text()();
   TextColumn get cardId =>
       text().references(LearningCards, #id, onDelete: KeyAction.cascade)();
-  TextColumn get japanese => text()();
-  TextColumn get reading => text()();
+  TextColumn get targetText => text()();
+  TextColumn get pronunciation => text()();
   TextColumn get meaning => text()();
-  TextColumn get approxJlpt => text()();
+  TextColumn get approxLevel => text()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -103,7 +107,46 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await customStatement(
+          'ALTER TABLE learning_cards RENAME COLUMN japanese TO target_text',
+        );
+        await customStatement(
+          'ALTER TABLE learning_cards RENAME COLUMN reading TO pronunciation',
+        );
+        await customStatement(
+          "ALTER TABLE learning_cards ADD COLUMN target_language TEXT NOT NULL DEFAULT '${TargetLanguage.japanese.code}'",
+        );
+        await customStatement(
+          _legacyLevelMigrationSql(
+            table: 'learning_cards',
+            column: 'target_level',
+          ),
+        );
+
+        await customStatement(
+          'ALTER TABLE vocab_items RENAME COLUMN japanese TO target_text',
+        );
+        await customStatement(
+          'ALTER TABLE vocab_items RENAME COLUMN reading TO pronunciation',
+        );
+        await customStatement(
+          'ALTER TABLE vocab_items RENAME COLUMN approx_jlpt TO approx_level',
+        );
+        await customStatement(
+          _legacyLevelMigrationSql(
+            table: 'vocab_items',
+            column: 'approx_level',
+          ),
+        );
+      }
+    },
+  );
 }
 
 LazyDatabase _openConnection() {
@@ -112,4 +155,21 @@ LazyDatabase _openConnection() {
     final file = File(p.join(directory.path, 'language_tutor.sqlite'));
     return NativeDatabase.createInBackground(file);
   });
+}
+
+String _legacyLevelMigrationSql({
+  required String table,
+  required String column,
+}) {
+  return '''
+UPDATE $table
+SET $column = CASE $column
+  WHEN 'N5' THEN '${ProficiencyLevel.beginner.label}'
+  WHEN 'N4' THEN '${ProficiencyLevel.elementary.label}'
+  WHEN 'N3' THEN '${ProficiencyLevel.intermediate.label}'
+  WHEN 'N2' THEN '${ProficiencyLevel.upperIntermediate.label}'
+  WHEN 'N1' THEN '${ProficiencyLevel.advanced.label}'
+  ELSE $column
+END
+''';
 }

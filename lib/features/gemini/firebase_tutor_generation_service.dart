@@ -4,7 +4,8 @@ import 'package:firebase_ai/firebase_ai.dart';
 
 import '../../data/models/tutor_result.dart';
 import '../../data/models/tutor_result_schema.dart';
-import '../../shared/jlpt_level.dart';
+import '../../shared/proficiency_level.dart';
+import '../../shared/target_language.dart';
 import '../capture/camera_frame.dart';
 import 'tutor_generation_service.dart';
 
@@ -23,11 +24,10 @@ class FirebaseTutorGenerationService implements TutorGenerationService {
           );
 
   static const _systemInstruction = '''
-You are an ambient Japanese language tutor.
+You are an ambient language tutor.
 Analyze the camera image. Select exactly one useful visible object, action, or scene.
-Return one level-appropriate Japanese learning item only.
-Prefer ordinary daily-life phrases.
-Use natural Japanese, include kana reading, and keep grammar notes short.
+Return one target-language learning item only.
+Prefer ordinary daily-life phrases and practical vocabulary.
 Keep the grammar note under 20 words.
 Avoid rare vocabulary unless the image clearly requires it.
 Do not invent objects or actions not visible in the image.
@@ -38,11 +38,12 @@ Do not invent objects or actions not visible in the image.
   @override
   Future<TutorResult> generateFromFrame({
     required CameraFrame frame,
-    required JlptLevel level,
+    required TargetLanguage language,
+    required ProficiencyLevel level,
   }) async {
     final response = await _model.generateContent([
       Content.multi([
-        TextPart(_prompt(level)),
+        TextPart(_prompt(language, level)),
         InlineDataPart(frame.mimeType, frame.bytes),
       ]),
     ]);
@@ -61,15 +62,19 @@ Do not invent objects or actions not visible in the image.
     return result;
   }
 
-  String _prompt(JlptLevel level) {
+  String _prompt(TargetLanguage language, ProficiencyLevel level) {
     return '''
-Target language: Japanese.
+Target language: ${language.label}.
+Target-language writing guidance: ${language.lessonInstructions}
+Pronunciation guidance: ${language.pronunciationInstructions}
 Target level: ${level.label}.
+Level guidance: ${level.promptGuidance}
 
 Rules:
 - Return one useful learning item only.
 - Use the image as the source of truth.
-- Include one natural Japanese sentence, kana reading, English meaning, vocabulary, a short grammar note, and confidence.
+- Include one natural sentence in the target language, a pronunciation guide, English meaning, vocabulary, a short grammar note in English, and confidence.
+- Use `unknown` if a vocabulary item's approximate level is unclear.
 - Return JSON matching the provided response schema.
 ''';
   }
@@ -77,8 +82,8 @@ Rules:
   void _validateResult(TutorResult result) {
     if (result.sceneLabel.trim().isEmpty ||
         result.english.trim().isEmpty ||
-        result.japanese.trim().isEmpty ||
-        result.reading.trim().isEmpty ||
+        result.targetText.trim().isEmpty ||
+        result.pronunciation.trim().isEmpty ||
         result.grammarNote.trim().isEmpty) {
       throw const FormatException(
         'Gemini response was missing required lesson content.',

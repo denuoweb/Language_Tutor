@@ -13,8 +13,8 @@ TutorResult _$TutorResultFromJson(Map<String, dynamic> json) =>
         allowedKeys: const [
           'sceneLabel',
           'english',
-          'japanese',
-          'reading',
+          'targetText',
+          'pronunciation',
           'keyVocabulary',
           'grammarNote',
           'confidence',
@@ -23,8 +23,8 @@ TutorResult _$TutorResultFromJson(Map<String, dynamic> json) =>
       final val = TutorResult(
         sceneLabel: $checkedConvert('sceneLabel', (v) => v as String),
         english: $checkedConvert('english', (v) => v as String),
-        japanese: $checkedConvert('japanese', (v) => v as String),
-        reading: $checkedConvert('reading', (v) => v as String),
+        targetText: $checkedConvert('targetText', (v) => v as String),
+        pronunciation: $checkedConvert('pronunciation', (v) => v as String),
         keyVocabulary: $checkedConvert(
           'keyVocabulary',
           (v) => (v as List<dynamic>)
@@ -41,8 +41,8 @@ Map<String, dynamic> _$TutorResultToJson(TutorResult instance) =>
     <String, dynamic>{
       'sceneLabel': instance.sceneLabel,
       'english': instance.english,
-      'japanese': instance.japanese,
-      'reading': instance.reading,
+      'targetText': instance.targetText,
+      'pronunciation': instance.pronunciation,
       'keyVocabulary': instance.keyVocabulary,
       'grammarNote': instance.grammarNote,
       'confidence': instance.confidence,
@@ -52,20 +52,25 @@ VocabItem _$VocabItemFromJson(Map<String, dynamic> json) =>
     $checkedCreate('VocabItem', json, ($checkedConvert) {
       $checkKeys(
         json,
-        allowedKeys: const ['japanese', 'reading', 'meaning', 'approxJlpt'],
+        allowedKeys: const [
+          'targetText',
+          'pronunciation',
+          'meaning',
+          'approxLevel',
+        ],
       );
       final val = VocabItem(
-        japanese: $checkedConvert('japanese', (v) => v as String),
-        reading: $checkedConvert('reading', (v) => v as String),
+        targetText: $checkedConvert('targetText', (v) => v as String),
+        pronunciation: $checkedConvert('pronunciation', (v) => v as String),
         meaning: $checkedConvert('meaning', (v) => v as String),
-        approxJlpt: $checkedConvert('approxJlpt', (v) => v as String),
+        approxLevel: $checkedConvert('approxLevel', (v) => v as String),
       );
       return val;
     });
 
 Map<String, dynamic> _$VocabItemToJson(VocabItem instance) => <String, dynamic>{
-  'japanese': instance.japanese,
-  'reading': instance.reading,
+  'targetText': instance.targetText,
+  'pronunciation': instance.pronunciation,
   'meaning': instance.meaning,
-  'approxJlpt': instance.approxJlpt,
+  'approxLevel': instance.approxLevel,
 };

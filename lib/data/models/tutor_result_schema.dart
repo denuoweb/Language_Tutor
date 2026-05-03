@@ -1,5 +1,6 @@
 import 'package:firebase_ai/firebase_ai.dart';
 
+import '../../shared/proficiency_level.dart';
 import 'tutor_result.dart';
 
 const tutorResponseSchemaKeys = TutorResult.requiredJsonKeys;
@@ -8,20 +9,29 @@ final tutorResponseSchema = Schema.object(
   properties: {
     'sceneLabel': Schema.string(description: 'Short visible scene label.'),
     'english': Schema.string(description: 'English meaning of the lesson.'),
-    'japanese': Schema.string(description: 'Natural Japanese sentence.'),
-    'reading': Schema.string(description: 'Kana reading of the Japanese.'),
+    'targetText': Schema.string(
+      description: 'Natural sentence in the requested target language.',
+    ),
+    'pronunciation': Schema.string(
+      description: 'Pronunciation guide for the target language sentence.',
+    ),
     'keyVocabulary': Schema.array(
       maxItems: 4,
       items: Schema.object(
         properties: {
-          'japanese': Schema.string(),
-          'reading': Schema.string(),
+          'targetText': Schema.string(),
+          'pronunciation': Schema.string(),
           'meaning': Schema.string(),
-          'approxJlpt': Schema.enumString(
-            enumValues: ['N5', 'N4', 'N3', 'N2', 'N1', 'unknown'],
+          'approxLevel': Schema.enumString(
+            enumValues: ProficiencyLevel.schemaValues,
           ),
         },
-        propertyOrdering: ['japanese', 'reading', 'meaning', 'approxJlpt'],
+        propertyOrdering: [
+          'targetText',
+          'pronunciation',
+          'meaning',
+          'approxLevel',
+        ],
       ),
     ),
     'grammarNote': Schema.string(description: 'One short grammar note.'),

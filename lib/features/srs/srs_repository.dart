@@ -1,6 +1,7 @@
 import '../../data/database/app_database.dart';
 import '../../data/models/tutor_result.dart';
-import '../../shared/jlpt_level.dart';
+import '../../shared/proficiency_level.dart';
+import '../../shared/target_language.dart';
 import 'review_grade.dart';
 
 abstract interface class SrsRepository {
@@ -8,7 +9,8 @@ abstract interface class SrsRepository {
 
   Future<LearningCard?> insertGeneratedCard({
     required TutorResult lesson,
-    required JlptLevel targetLevel,
+    required TargetLanguage targetLanguage,
+    required ProficiencyLevel targetLevel,
     required DateTime now,
     required String source,
   });
