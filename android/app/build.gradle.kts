@@ -20,6 +20,10 @@ val configuredNdkDir =
         ?: System.getenv("ANDROID_NDK_HOME")
         ?: System.getenv("ANDROID_NDK_ROOT")
 
+val configuredAapt2Path =
+    localProperties.getProperty("apkw.aapt2.path")
+        ?: System.getenv("APKW_AAPT2_PATH")
+
 val configuredNdkVersion =
     configuredNdkDir?.let { ndkDir ->
         val sourceProperties = file("$ndkDir/source.properties")
@@ -31,6 +35,11 @@ val configuredNdkVersion =
             }.getProperty("Pkg.Revision")
         }
     }
+
+if (!configuredAapt2Path.isNullOrBlank()) {
+    project.extensions.extraProperties["android.aapt2FromMavenOverride"] =
+        configuredAapt2Path
+}
 
 android {
     namespace = "com.denuoweb.language_tutor"
