@@ -43,6 +43,11 @@ app.*.symbols
 # Firebase/Admin secrets
 firebase-adminsdk*.json
 service-account*.json
+firebase.json
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+*.keystore
+*.jks
 
 # Obfuscation related
 app.*.map.json

@@ -5,11 +5,14 @@ import 'package:flutter/widgets.dart';
 import '../../firebase_options.dart';
 
 class FirebaseBootstrap {
+  static const bool _firebaseAiEnabled = bool.fromEnvironment(
+    'FIREBASE_AI_ENABLED',
+  );
+
   static bool get liveGeminiEnabled {
-    if (kIsWeb) {
+    if (!_firebaseAiEnabled || kIsWeb) {
       return false;
     }
-
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
       case TargetPlatform.iOS:

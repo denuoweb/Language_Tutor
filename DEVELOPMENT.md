@@ -2,8 +2,8 @@
 
 This app runs in two modes:
 
-1. Live Gemini mode on Android and iOS: Firebase AI Logic calls Gemini 2.5 Flash from Flutter.
-2. Demo mode fallback on unsupported platforms: deterministic local Gemini substitute.
+1. Demo mode by default: deterministic local Gemini substitute with no Firebase project keys in git.
+2. Live Gemini mode when explicitly enabled on Android or iOS: Firebase AI Logic calls Gemini 2.5 Flash from Flutter.
 
 We use Gemini 2.5 Flash through Firebase AI Logic, Google's official mobile SDK path for calling Gemini from Flutter.
 
@@ -48,7 +48,7 @@ Generate Drift and JSON code:
 dart run build_runner build
 ```
 
-Run the app:
+Run the app in demo mode:
 
 ```sh
 flutter run
@@ -88,7 +88,7 @@ flutterfire configure \
   --out lib/firebase_options.dart
 ```
 
-This writes Firebase config to `lib/firebase_options.dart` for your project.
+This replaces the committed stub at `lib/firebase_options.dart` with Firebase config for your project.
 
 If the Firebase apps already exist and you need to inspect their app IDs:
 
@@ -99,8 +99,8 @@ firebase apps:list --project YOUR_PROJECT_ID
 If you need to recover an existing platform config manually:
 
 ```sh
-firebase apps:sdkconfig ANDROID FIREBASE_ANDROID_APP_ID --project YOUR_PROJECT_ID
-firebase apps:sdkconfig IOS FIREBASE_IOS_APP_ID --project YOUR_PROJECT_ID
+firebase apps:sdkconfig ANDROID FIREBASE_ANDROID_APP_ID --project YOUR_PROJECT_ID > android/app/google-services.json
+firebase apps:sdkconfig IOS FIREBASE_IOS_APP_ID --project YOUR_PROJECT_ID > ios/Runner/GoogleService-Info.plist
 ```
 
 Prefer `flutterfire configure` for this Flutter app because it writes the Dart `DefaultFirebaseOptions` class expected by `lib/features/gemini/firebase_bootstrap.dart`.
@@ -115,8 +115,15 @@ Enable Firebase AI Logic:
 6. Let Firebase enable the required APIs and create the Gemini API key.
 7. Do not paste that Gemini API key into Flutter code.
 
-After Firebase is configured for Android and iOS, `flutter run` uses the live
-Firebase AI Logic path by default on those platforms.
+Keep the generated `google-services.json`, `GoogleService-Info.plist`, and
+`firebase.json` local to your machine. This repository intentionally does not
+track them.
+
+Run live Gemini mode only when you want Firebase enabled:
+
+```sh
+flutter run --dart-define=FIREBASE_AI_ENABLED=true
+```
 
 ## Android Toolchain Overrides
 
@@ -135,7 +142,11 @@ This is intended for local machine setup and should not be committed.
 
 For this mobile app, there should be no local `.env` file and no Gemini API key in the repo.
 
-Firebase config files such as `lib/firebase_options.dart`, `google-services.json`, and `GoogleService-Info.plist` contain project identifiers and Firebase API keys. Firebase documents these API keys as non-secret identifiers, but they should still be restricted and reviewed in Google Cloud Console.
+Firebase config files such as a generated `lib/firebase_options.dart`,
+`google-services.json`, and `GoogleService-Info.plist` contain project
+identifiers and Firebase API keys. Firebase documents these API keys as
+non-secret identifiers, but they should still be restricted and reviewed in
+Google Cloud Console and should stay out of this repository.
 
 Real secrets must not be read directly by Flutter clients. Mobile apps are untrusted clients, so Firebase Secret Manager is only appropriate for server-side Firebase code such as Cloud Functions or App Hosting.
 
@@ -189,6 +200,7 @@ dart format --set-exit-if-changed .
 flutter analyze
 flutter test
 flutter run
+flutter run --dart-define=FIREBASE_AI_ENABLED=true
 ```
 
 If Gradle reports corrupted Kotlin DSL metadata such as `metadata.bin`, clear that
@@ -212,11 +224,16 @@ Do not commit:
 *.p12
 *.keystore
 *.jks
+firebase.json
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
 service-account*.json
 firebase-adminsdk*.json
 ```
 
-The generated `lib/firebase_options.dart` is not a secret, but review it before committing if the repository is public.
+This repo keeps a stub `lib/firebase_options.dart` in git. If you generate a
+local replacement for live Firebase usage, do not commit it back to the public
+repository.
 
 ## References
 

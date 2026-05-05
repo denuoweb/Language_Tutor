@@ -2,9 +2,6 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -26,6 +23,11 @@ val metaDatClientToken = localProperties.getProperty("meta.dat.client.token") ?:
 val metaDatCallbackScheme = localProperties.getProperty("meta.dat.callback.scheme") ?: "language-tutor"
 val metaDatAnalyticsOptOut =
     localProperties.getProperty("meta.dat.analytics.opt_out")?.toBoolean() ?: true
+val googleServicesConfigFile = file("google-services.json")
+
+if (googleServicesConfigFile.exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
 
 if (metaDatEnabled && githubToken.isNullOrBlank()) {
     throw GradleException(
@@ -103,16 +105,6 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    signingConfigs {
-        create("repoDebug") {
-            // Keep debug installs compatible across machines by using a stable repo-local key.
-            storeFile = file("language-tutor-debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
-    }
-
     defaultConfig {
         applicationId = "com.denuoweb.language_tutor"
         // You can update the following values to match your application needs.
@@ -150,11 +142,9 @@ android {
     }
 
     buildTypes {
-        debug {
-            signingConfig = signingConfigs.getByName("repoDebug")
-        }
         release {
-            signingConfig = signingConfigs.getByName("repoDebug")
+            // Keep local release builds runnable without committing a repo-local keystore.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }

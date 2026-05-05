@@ -13,4 +13,4 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
-!app/language-tutor-debug.keystore
+app/google-services.json
